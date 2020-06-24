@@ -391,7 +391,7 @@ head(cic_data)</code></pre>
 ## 4   0    1      1
 ## 5   0    1      1
 ## 6   0    1      1</code></pre>
-<p>In these data, <code>arm</code> is the treatment arm, 0 for reference, 1 for treatment; <code>time</code> is the observation time in days; and <code>status</code> is the event type, 0 for censoring, 1 for recovery, 2 for death.</p>
+<p>In these data, <code>arm</code> is the treatment arm, 0 for reference, 1 for treatment; <code>time</code> is the observation time in days; and <code>status</code> is the event type, 0 for censoring, 1 for recovery, 2 for death. For analysing other data sets, <code>arm</code> should likewise be coded 0/1, and the event with status 1 is assumed to be the event of interest.</p>
 <div id="difference-in-event-rates" class="section level2">
 <h2>Difference in event rates</h2>
 <p>To find a confidence interval and p-vaue for the difference in event rates at <span class="math inline">\(\tau = 28\)</span> days:</p>

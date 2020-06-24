@@ -1,3 +1,14 @@
+---
+title: "README"
+author: "Zachary McCaw"
+date: "2020-06-24"
+output: 
+  html_document: 
+    keep_md: TRUE
+--- 
+
+
+
 # Description
 
 This package provides functions for inference on the difference in event rates, quantiles, and areas under the cumulative incidence curves between two treatment arms. 
@@ -30,7 +41,7 @@ head(cic_data)
 ## 6   0    1      1
 ```
 
-In these data, `arm` is the treatment arm, 0 for reference, 1 for treatment; `time` is the observation time in days; and `status` is the event type, 0 for censoring, 1 for recovery, 2 for death. 
+In these data, `arm` is the treatment arm, 0 for reference, 1 for treatment; `time` is the observation time in days; and `status` is the event type, 0 for censoring, 1 for recovery, 2 for death. For analysing other data sets, `arm` should likewise be coded 0/1, and the event with status 1 is assumed to be the event of interest. 
 
 ## Difference in event rates
 

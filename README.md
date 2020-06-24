@@ -1,14 +1,3 @@
----
-title: "README"
-author: "Zachary McCaw"
-date: "2020-06-24"
-output: 
-  html_document: 
-    keep_md: TRUE
---- 
-
-
-
 # Description
 
 This package provides functions for inference on the difference in event rates, quantiles, and areas under the cumulative incidence curves between two treatment arms. 
@@ -102,7 +91,7 @@ round(ci, digits = 2)
 
 ```
 ##  Time  Arm1  Arm0 Delta     L     U 
-## 28.00 14.60 11.82  2.79  1.55  3.96
+## 28.00 14.60 11.82  2.79  1.54  3.97
 ```
 
 ```r

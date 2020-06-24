@@ -1,0 +1,64 @@
+---
+title: "README"
+author: "Zachary McCaw"
+date: "`r Sys.Date()`"
+output: 
+  html_document: 
+    keep_md: TRUE
+--- 
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# Description
+
+This package provides functions for inference on the difference in event rates, quantiles, and areas under the cumulative incidence curves between two treatment arms. 
+
+# Installation
+
+```{R, eval=FALSE}
+devtools::install_github(repo = 'zrmacc/CICs')
+```
+
+# Examples
+
+Synthetic example data in the format expected by this package may be loaded via:
+
+```{R}
+library(CICs)
+data(cic_data)
+head(cic_data)
+```
+
+In these data, `arm` is the treatment arm, 0 for reference, 1 for treatment; `time` is the observation time in days; and `status` is the event type, 0 for censoring, 1 for recovery, 2 for death. 
+
+## Difference in event rates
+
+To find a confidence interval and p-vaue for the difference in event rates at $\tau = 28$ days:
+```{R}
+ci <- EventRateDiffCI(cic_data$time, cic_data$status, cic_data$arm, tau = 28)
+round(ci, digits = 2)
+pval <- EventRateDiffP(cic_data$time, cic_data$status, cic_data$arm, tau = 28)
+round(pval, digits = 2)
+```
+
+## Difference in medians
+
+To find a confidence interval and p-vaue for the difference in medians $q = 0.5$:
+```{R}
+ci <- QuantDiffCI(cic_data$time, cic_data$status, cic_data$arm, q = 0.5)
+round(ci, digits = 2)
+pval <- QuantDiffP(cic_data$time, cic_data$status, cic_data$arm, q = 0.5)
+round(pval, digits = 2)
+```
+
+## Difference in areas under the curve
+
+To find a confidence interval and p-vaue for the difference in areas under the curve at $\tau = 28$ days:
+```{R}
+ci <- AUCDiffCI(cic_data$time, cic_data$status, cic_data$arm, tau = 28)
+round(ci, digits = 2)
+pval <- AUCDiffP(cic_data$time, cic_data$status, cic_data$arm, tau = 28)
+round(pval, digits = 2)
+```

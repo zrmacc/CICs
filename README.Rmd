@@ -33,32 +33,47 @@ head(cic_data)
 
 In these data, `arm` is the treatment arm, 0 for reference, 1 for treatment; `time` is the observation time in days; and `status` is the event type, 0 for censoring, 1 for recovery, 2 for death. For analysing other data sets, `arm` should likewise be coded 0/1, and the event with status 1 is assumed to be the event of interest. 
 
-## Difference in event rates
+## Compare Event Rates
 
-To find a confidence interval and p-vaue for the difference in event rates at $\tau = 28$ days:
+To find a confidence interval and p-vaue for the difference and ratio in event rates at $\tau = 28$ days:
 ```{R}
-ci <- EventRateDiffCI(cic_data$time, cic_data$status, cic_data$arm, tau = 28)
-round(ci, digits = 2)
-pval <- EventRateDiffP(cic_data$time, cic_data$status, cic_data$arm, tau = 28)
-round(pval, digits = 2)
+event_rates <- CompareEventRates(
+  time = cic_data$time,
+  status = cic_data$status,
+  arm = cic_data$arm,
+  tau = 28,
+  reps = 2000,
+  alpha = 0.05
+)
+show(event_rates)
 ```
 
-## Difference in medians
+## Compare Medians
 
-To find a confidence interval and p-vaue for the difference in medians $q = 0.5$:
+To find a confidence interval and p-vaue for the difference and ratio in medians $q = 0.5$:
 ```{R}
-ci <- QuantDiffCI(cic_data$time, cic_data$status, cic_data$arm, q = 0.5)
-round(ci, digits = 2)
-pval <- QuantDiffP(cic_data$time, cic_data$status, cic_data$arm, q = 0.5)
-round(pval, digits = 2)
+medians <- CompareQuants(
+  time = cic_data$time,
+  status = cic_data$status,
+  arm = cic_data$arm,
+  q = 0.5,
+  reps = 2000,
+  alpha = 0.05
+)
+show(medians)
 ```
 
-## Difference in areas under the curve
+## Copare AUCs
 
-To find a confidence interval and p-vaue for the difference in areas under the curve at $\tau = 28$ days:
+To find a confidence interval and p-vaue for the difference and ratio in areas under the curve at $\tau = 28$ days:
 ```{R}
-ci <- AUCDiffCI(cic_data$time, cic_data$status, cic_data$arm, tau = 28)
-round(ci, digits = 2)
-pval <- AUCDiffP(cic_data$time, cic_data$status, cic_data$arm, tau = 28)
-round(pval, digits = 2)
+aucs <- CompareAUCs(
+  time = cic_data$time,
+  status = cic_data$status,
+  arm = cic_data$arm,
+  tau = 28,
+  reps = 2000,
+  alpha = 0.05
+)
+show(aucs)
 ```

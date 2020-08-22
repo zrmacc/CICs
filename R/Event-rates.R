@@ -14,166 +14,150 @@ EventRate <- function(times, probs, tau) {
 }
 
 
-#' Generate Bootstrap Confidence Interval for the Event Rate Difference.
+#' Calculate Difference and Ratio in Event Rates. 
+#' 
+#' @param data Data.frame containing `time`, `status`, `arm`.
+#' @param tau Truncation time.
+#' @param return_rates Return the event rates?
+#' @importFrom cmprsk cuminc
+#' @return If `return_rates = TRUE`, list containing:
+#' \itemize{
+#'   \item `rates` for each arm. 
+#'   \item `stats`, including the difference and ratio of areas.
+#' }
+#'  If `return_rates = FALSE`, only `stats` is returned. 
+
+EventRate.Stats <- function(data, tau, return_rates = FALSE) {
+  
+  # Fit competing risks model.
+  fit <- cuminc(ftime = data$time, fstatus = data$status, group = data$arm)
+  
+  # Cumulative incidence curves.
+  r0 <- EventRate(fit$`0 1`$time, fit$`0 1`$est, tau = tau)
+  r1 <- EventRate(fit$`1 1`$time, fit$`1 1`$est, tau = tau)
+  rates <- c('r0' = r0, 'r1' = r1)
+  
+  # Difference and ratio
+  diff <- r1 - r0
+  ratio <- r1 / r0
+  stats <- c('diff' = diff, 'ratio' = ratio)
+  
+  # Output
+  if(return_rates){
+    out <- list('rates' = rates, 'stats' = stats)
+  } else {
+    out <- stats
+  }
+  return(out)
+}
+
+
+#' Bootstrap Inference for the Event Rate Difference.
 #'
-#' Bootstrap confidence interval for the event rate difference at time tau.
+#' Bootstrap inference for the difference and ratio of event rates
+#' at time tau. 
 #'
 #' @param time Observation time.
 #' @param status Event status. The event coded as 1 is assumed to be the event
 #'   of interest.
 #' @param arm Arm, assumed to have two levels, coded 0/1.
 #' @param tau Event time.
-#' @param B Bootstrap replicates.
+#' @param reps Bootstrap replicates.
 #' @param alpha Alpha level.
 #' @importFrom cmprsk cuminc
 #' @import stats
 #' @export
-#' @return Numeric vector containing the event time `Time`, the estimated rates
-#'   in arms 1 `Arm1` and 0 `Arm0`, the difference `Delta`, and the lower `L`
-#'   and upper `U` confidence bounds.
+#' @return Data.frame containing these columns:
+#' \describe{
+#'   \item{Time}{Truncation time.}
+#'   \item{Arm0}{Event rate for arm 0.}
+#'   \item{Arm1}{Event rate for arm 1.}
+#'   \item{Contrast}{'A1-A0' for the difference and 'A1/A0' for the ratio.}
+#'   \item{Estimate}{The estimated difference and ratio of AUCs.}
+#'   \item{L}{Confidence lower bound.}
+#'   \item{U}{Confidence upper bound.}
+#'   \item{P}{P-value.}
+#' }
 
-EventRateDiffCI <- function(time, status, arm, tau, B = 2000, alpha = 0.05) {
-
+CompareEventRates <- function(
+  time, 
+  status, 
+  arm, 
+  tau, 
+  reps = 2000, 
+  alpha = 0.05
+) {
+  
   # Data.
   data <- data.frame(time, status, arm)
-
+  n <- nrow(data)
+  
   # Split data.
-  data0 <- data[data$arm == 0, ]
   data1 <- data[data$arm == 1, ]
-
-  # Fit competing risks model.
-  fit <- cuminc(ftime = data$time, fstatus = data$status, group = data$arm)
-
-  # Cumulative incidence curves.
-  q0 <- EventRate(fit$`0 1`$time, fit$`0 1`$est, tau = tau)
-  q1 <- EventRate(fit$`1 1`$time, fit$`1 1`$est, tau = tau)
-
+  data0 <- data[data$arm == 0, ]
+  
   # Observed difference.
-  dobs <- q1 - q0
-
+  obs <- EventRate.Stats(data = data, tau = tau, return_rates = TRUE)
+  obs_rates <- obs$rates
+  obs_stats <- obs$stats
+  
   # Bootstrap function.
   aux <- function(b) {
-
+    
     # Bootstrap data sets.
     boot1 <- BootData(data1)
     boot0 <- BootData(data0)
     boot <- rbind(boot1, boot0)
-
-    # Estimate cumulative incidence curves.
-    fit_boot <- cuminc(ftime = boot$time, fstatus = boot$status, group = boot$arm)
-
-    # Bootstrap quantiles.
-    qb0 <- EventRate(
-      times = fit_boot$`0 1`$time,
-      probs = fit_boot$`0 1`$est,
-      tau = tau
-    )
-    qb1 <- EventRate(
-      times = fit_boot$`1 1`$time,
-      probs = fit_boot$`1 1`$est,
-      tau = tau
-    )
-
-    # Bootstrap difference.
-    dboot <- qb1 - qb0
-    return(dboot)
-  }
-
-  boot <- lapply(seq(1:B), aux)
-  boot <- do.call(c, boot)
-
-  # Confidence interval.
-  alpha2 <- alpha / 2
-  L <- as.numeric(quantile(boot, alpha2, na.rm = TRUE))
-  U <- as.numeric(quantile(boot, 1 - alpha2, na.rm = TRUE))
-
-  # Output.
-  out <- c("Time" = tau, "Arm1" = q1, "Arm0" = q0, "Delta" = dobs, "L" = L, "U" = U)
-  return(out)
-}
-
-
-#' Generate Permutation P-value for the Event Rate Difference.
-#'
-#' Permutation p-value the difference in event rates at time time tau.
-#'
-#' @param time Observation time.
-#' @param status Event status. The event coded as 1 is assumed to be the event
-#'   of interest.
-#' @param arm Arm, assumed to have two levels, coded 0/1.
-#' @param tau Event time.
-#' @param B Permutations.
-#' @importFrom cmprsk cuminc
-#' @import stats
-#' @export
-#' @return Numeric vector containing the event time `Time`, the estimated rates
-#'   in arms 1 `Arm1` and 0 `Arm0`, the difference `Delta`, and the permutation
-#'   p-value `P`.
-
-EventRateDiffP <- function(time, status, arm, tau, B = 2000) {
-
-  # Data.
-  data <- data.frame(time, status, arm)
-
-  # Split data.
-  data1 <- data[data$arm == 1, ]
-  data0 <- data[data$arm == 0, ]
-
-  # Fit competing risks model.
-  fit <- cuminc(ftime = data$time, fstatus = data$status, group = data$arm)
-
-  # Cumulative incidence curves.
-  q0 <- EventRate(fit$`0 1`$time, fit$`0 1`$est, tau = tau)
-  q1 <- EventRate(fit$`1 1`$time, fit$`1 1`$est, tau = tau)
-
-  # Observed difference.
-  dobs <- q1 - q0
-
-  # Data to permute.
-  data_perm <- data
-  n <- nrow(data)
-
-  # Function to bootstrap
-  aux <- function(b) {
-
-    # Permute treatment
-    data_perm$arm <- data$arm[sample(n, n, replace = FALSE)]
-
-    # Estimate cumulative incidence curves.
-    fit_perm <- cuminc(
-      ftime = data_perm$time,
-      fstatus = data_perm$status,
-      group = data_perm$arm
-    )
-
-    # Permutation quantiles.
-    qb0 <- EventRate(
-      times = fit_perm$`0 1`$time,
-      probs = fit_perm$`0 1`$est,
-      tau = tau
-    )
-    qb1 <- EventRate(
-      times = fit_perm$`1 1`$time,
-      probs = fit_perm$`1 1`$est,
-      tau = tau
-    )
-
-    # Bootstrap difference.
-    dperm <- qb1 - qb0
-
-    # Bootstrap difference as or more extreme
-    out <- 1 * (abs(dperm) >= abs(dobs))
+    
+    # Bootstrap statistics.
+    boot_stats <- EventRate.Stats(data = boot, tau = tau)
+    
+    # Permuted data.
+    boot$arm <- boot$arm[sample(n, n, replace = FALSE)]
+    perm_stats <- EventRate.Stats(data = boot, tau = tau)
+    
+    # Output
+    out <- boot_stats
+    out[3] <- 1 * abs(perm_stats[1]) >= abs(obs_stats[1])
+    out[4] <- 1 * abs(log(perm_stats[2])) >= abs(log(obs_stats[2]))
     return(out)
   }
-
-  perm <- lapply(seq(1:B), aux)
-  perm <- do.call(c, perm)
-
-  # Permutation p-vaue.
-  perm <- c(1, perm)
-  p <- mean(perm)
-
-  # Output.
-  out <- c("Time" = tau, "Arm1" = q1, "Arm0" = q0, "Delta" = dobs, "P" = p)
+  
+  # Bootstrapping. 
+  sim <- lapply(seq(1:reps), aux)
+  sim <- do.call(rbind, sim)
+  
+  # Confidence interval
+  alpha2 <- alpha / 2
+  lower <- apply(
+    X = sim[, 1:2], 
+    MARGIN = 2, 
+    FUN = function(x) {as.numeric(quantile(x, alpha2, na.rm = TRUE))}
+  )
+  upper <- apply(
+    X = sim[, 1:2], 
+    MARGIN = 2, 
+    FUN = function(x){as.numeric(quantile(x, 1 - alpha2, na.rm = TRUE))}
+  )
+  
+  # P-values
+  pval <- apply(
+    X = rbind(sim[, 3:4], c(1, 1)),
+    MARGIN = 2,
+    FUN = function(x){as.numeric(mean(x, na.rm = TRUE))}
+  )
+  
+  # Output
+  out <- data.frame(
+    'Time' = c(tau, tau), 
+    'Arm0' = rep(x = obs_rates[1], times = 2),
+    'Arm1' = rep(x = obs_rates[2], times = 2)
+  )
+  out$Contrast <- c('A1-A0', 'A1/A0')
+  out$Estimate <- obs_stats
+  out$L <- lower
+  out$U <- upper
+  out$P <- pval
   return(out)
 }
+

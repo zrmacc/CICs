@@ -63,7 +63,7 @@ medians <- CompareQuants(
 show(medians)
 ```
 
-## Copare AUCs
+## Compare AUCs
 
 To find a confidence interval and p-vaue for the difference and ratio in areas under the curve at $\tau = 28$ days:
 ```{R}

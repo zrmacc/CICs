@@ -76,7 +76,7 @@ show(medians)
 ## 2  0.5   15    9    A1/A0      0.6  0.5  0.7857143 0.0004997501
 ```
 
-## Copare AUCs
+## Compare AUCs
 
 To find a confidence interval and p-vaue for the difference and ratio in areas under the curve at $\tau = 28$ days:
 

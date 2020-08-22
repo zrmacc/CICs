@@ -4,12 +4,14 @@
 \name{cic_data}
 \alias{cic_data}
 \title{Sample Competing Risks Data}
-\format{A data.frame containing three fields:
+\format{
+A data.frame containing three fields:
 \describe{
   \item{arm}{Treatment arm, 0 for reference, 1 for treatment.}
   \item{time}{Time-to event, integer between 1 and 30.}
   \item{status}{Event type, 0 for censoring, 1 for recovery, 2 for death.}
-}}
+}
+}
 \usage{
 data(cic_data)
 }

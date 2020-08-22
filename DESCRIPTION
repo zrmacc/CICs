@@ -8,11 +8,11 @@ Authors@R:
            email = "zmccaw@alumni.harvard.edu",
            comment = c(ORCID = "0000-0002-2006-9828"))
 Description: Provides functions for inference on the difference in event rates, quantiles, and areas under the 
-	cumulative incidence curves between two treatment arms. 
+	cumulative incidence curves, comparing two treatment arms. 
 Depends: R (>= 3.5.0)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports:
 	cmprsk
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1

@@ -1,6 +1,6 @@
 Package: CICs
-Title: Functions for Comparing Cumulative Incidence Curves
-Version: 0.0.2
+Title: Inference on Cumulative Incidence Curves
+Version: 0.1.0
 Authors@R: 
     person(given = "Zachary",
            family = "McCaw",
@@ -14,5 +14,7 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports:
-	cmprsk
+	cmprsk,
+	methods,
+	stats
 RoxygenNote: 7.1.1

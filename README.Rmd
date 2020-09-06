@@ -7,21 +7,28 @@ output:
     keep_md: TRUE
 --- 
 
+# Inference for Cumulative Incidence Curves
+
+Zachary McCaw <br>
+Updated: 20-09-06
+
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-# Description
+### Description
 
-This package provides functions for inference on the difference in event rates, quantiles, and areas under the cumulative incidence curves between two treatment arms. 
+This package provides functions for inference on the difference in AUCs, event rates, and quantiles comparing two cumulative incidence curves. Also see [MCC](https://github.com/zrmacc/MCC) for inference on mean cumulative count curves. 
 
-# Installation
+## Installation
 
 ```{R, eval=FALSE}
 devtools::install_github(repo = 'zrmacc/CICs')
 ```
 
-# Examples
+## Examples
+
+### Data
 
 Synthetic example data in the format expected by this package may be loaded via:
 
@@ -33,47 +40,50 @@ head(cic_data)
 
 In these data, `arm` is the treatment arm, 0 for reference, 1 for treatment; `time` is the observation time in days; and `status` is the event type, 0 for censoring, 1 for recovery, 2 for death. For analysing other data sets, `arm` should likewise be coded 0/1, and the event with status 1 is assumed to be the event of interest. 
 
-## Compare Event Rates
-
-To find a confidence interval and p-vaue for the difference and ratio in event rates at $\tau = 28$ days:
-```{R}
-event_rates <- CompareEventRates(
-  time = cic_data$time,
-  status = cic_data$status,
-  arm = cic_data$arm,
-  tau = 28,
-  reps = 2000,
-  alpha = 0.05
-)
-show(event_rates)
-```
-
-## Compare Medians
-
-To find a confidence interval and p-vaue for the difference and ratio in medians $q = 0.5$:
-```{R}
-medians <- CompareQuants(
-  time = cic_data$time,
-  status = cic_data$status,
-  arm = cic_data$arm,
-  q = 0.5,
-  reps = 2000,
-  alpha = 0.05
-)
-show(medians)
-```
-
-## Compare AUCs
+### Compare AUCs
 
 To find a confidence interval and p-vaue for the difference and ratio in areas under the curve at $\tau = 28$ days:
 ```{R}
-aucs <- CompareAUCs(
+aucs <- CompareCICs(
   time = cic_data$time,
   status = cic_data$status,
   arm = cic_data$arm,
-  tau = 28,
-  reps = 2000,
+  sum_stat = 'AUC',
+  param = 28,
+  reps = 100,
   alpha = 0.05
 )
 show(aucs)
+```
+
+### Compare Event Rates
+
+To find a confidence interval and p-vaue for the difference and ratio in event rates at $\tau = 28$ days:
+```{R}
+rates <- CompareCICs(
+  time = cic_data$time,
+  status = cic_data$status,
+  arm = cic_data$arm,
+  sum_stat = 'Rate',
+  param = 28,
+  reps = 100,
+  alpha = 0.05
+)
+show(rates)
+```
+
+### Compare Medians
+
+To find a confidence interval and p-vaue for the difference and ratio in medians $q = 0.5$:
+```{R}
+quants <- CompareCICs(
+  time = cic_data$time,
+  status = cic_data$status,
+  arm = cic_data$arm,
+  sum_stat = 'Quantile',
+  param = 0.5,
+  reps = 100,
+  alpha = 0.05
+)
+show(quants)
 ```

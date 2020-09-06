@@ -11,7 +11,7 @@
 
 <meta name="author" content="Zachary McCaw" />
 
-<meta name="date" content="2020-08-22" />
+<meta name="date" content="2020-09-06" />
 
 <title>README</title>
 
@@ -365,21 +365,26 @@ summary {
 
 <h1 class="title toc-ignore">README</h1>
 <h4 class="author">Zachary McCaw</h4>
-<h4 class="date">2020-08-22</h4>
+<h4 class="date">2020-09-06</h4>
 
 </div>
 
 
-<div id="description" class="section level1">
-<h1>Description</h1>
-<p>This package provides functions for inference on the difference in event rates, quantiles, and areas under the cumulative incidence curves between two treatment arms.</p>
+<div id="inference-for-cumulative-incidence-curves" class="section level1">
+<h1>Inference for Cumulative Incidence Curves</h1>
+<p>Zachary McCaw <br> Updated: 20-09-06</p>
+<div id="description" class="section level3">
+<h3>Description</h3>
+<p>This package provides functions for inference on the difference in AUCs, event rates, and quantiles comparing two cumulative incidence curves. Also see <a href="https://github.com/zrmacc/MCC">MCC</a> for inference on mean cumulative count curves.</p>
 </div>
-<div id="installation" class="section level1">
-<h1>Installation</h1>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
 <pre class="r"><code>devtools::install_github(repo = &#39;zrmacc/CICs&#39;)</code></pre>
 </div>
-<div id="examples" class="section level1">
-<h1>Examples</h1>
+<div id="examples" class="section level2">
+<h2>Examples</h2>
+<div id="data" class="section level3">
+<h3>Data</h3>
 <p>Synthetic example data in the format expected by this package may be loaded via:</p>
 <pre class="r"><code>library(CICs)
 data(cic_data)
@@ -392,53 +397,103 @@ head(cic_data)</code></pre>
 ## 5   0    1      1
 ## 6   0    1      1</code></pre>
 <p>In these data, <code>arm</code> is the treatment arm, 0 for reference, 1 for treatment; <code>time</code> is the observation time in days; and <code>status</code> is the event type, 0 for censoring, 1 for recovery, 2 for death. For analysing other data sets, <code>arm</code> should likewise be coded 0/1, and the event with status 1 is assumed to be the event of interest.</p>
-<div id="compare-event-rates" class="section level2">
-<h2>Compare Event Rates</h2>
-<p>To find a confidence interval and p-vaue for the difference and ratio in event rates at <span class="math inline">\(\tau = 28\)</span> days:</p>
-<pre class="r"><code>event_rates &lt;- CompareEventRates(
-  time = cic_data$time,
-  status = cic_data$status,
-  arm = cic_data$arm,
-  tau = 28,
-  reps = 2000,
-  alpha = 0.05
-)
-show(event_rates)</code></pre>
-<pre><code>##   Time      Arm0      Arm1 Contrast   Estimate           L         U          P
-## 1   28 0.6931547 0.7492792    A1-A0 0.05612454 -0.01251013 0.1247889 0.09995002
-## 2   28 0.6931547 0.7492792    A1/A0 1.08096972  0.98282756 1.1925455 0.10044978</code></pre>
 </div>
-<div id="compare-medians" class="section level2">
-<h2>Compare Medians</h2>
-<p>To find a confidence interval and p-vaue for the difference and ratio in medians <span class="math inline">\(q = 0.5\)</span>:</p>
-<pre class="r"><code>medians &lt;- CompareQuants(
-  time = cic_data$time,
-  status = cic_data$status,
-  arm = cic_data$arm,
-  q = 0.5,
-  reps = 2000,
-  alpha = 0.05
-)
-show(medians)</code></pre>
-<pre><code>##   Prob Arm0 Arm1 Contrast Estimate    L          U            P
-## 1  0.5   15    9    A1-A0     -6.0 -8.0 -3.0000000 0.0004997501
-## 2  0.5   15    9    A1/A0      0.6  0.5  0.7857143 0.0004997501</code></pre>
-</div>
-<div id="compare-aucs" class="section level2">
-<h2>Compare AUCs</h2>
+<div id="compare-aucs" class="section level3">
+<h3>Compare AUCs</h3>
 <p>To find a confidence interval and p-vaue for the difference and ratio in areas under the curve at <span class="math inline">\(\tau = 28\)</span> days:</p>
-<pre class="r"><code>aucs &lt;- CompareAUCs(
+<pre class="r"><code>aucs &lt;- CompareCICs(
   time = cic_data$time,
   status = cic_data$status,
   arm = cic_data$arm,
-  tau = 28,
-  reps = 2000,
+  sum_stat = &#39;AUC&#39;,
+  param = 28,
+  reps = 100,
   alpha = 0.05
 )
 show(aucs)</code></pre>
-<pre><code>##   Time     Arm0     Arm1 Contrast Estimate        L        U            P
-## 1   28 11.81682 14.60295    A1-A0 2.786127 1.542519 3.940925 0.0004997501
-## 2   28 11.81682 14.60295    A1/A0 1.235776 1.122065 1.353300 0.0004997501</code></pre>
+<pre><code>## Stats:
+##   Arm   N Stat Observed
+## 1   0 600  AUC 11.81682
+## 2   1 600  AUC 14.60295
+## 
+## 
+## CIs:
+##   Contrast Observed Alpha        L        U
+## 1    A1-A0 2.786127  0.05 1.677072 3.968014
+## 2    A1/A0 1.235776  0.05 1.132008 1.353295
+## 
+## 
+## P-values:
+##   Contrast Method          P
+## 1    A1-A0   Boot 0.01980198
+## 2    A1/A0   Boot 0.01980198
+## 3    A1-A0   Perm 0.01980198
+## 4    A1/A0   Perm 0.01980198</code></pre>
+</div>
+<div id="compare-event-rates" class="section level3">
+<h3>Compare Event Rates</h3>
+<p>To find a confidence interval and p-vaue for the difference and ratio in event rates at <span class="math inline">\(\tau = 28\)</span> days:</p>
+<pre class="r"><code>rates &lt;- CompareCICs(
+  time = cic_data$time,
+  status = cic_data$status,
+  arm = cic_data$arm,
+  sum_stat = &#39;Rate&#39;,
+  param = 28,
+  reps = 100,
+  alpha = 0.05
+)
+show(rates)</code></pre>
+<pre><code>## Stats:
+##   Arm   N Stat  Observed
+## 1   0 600 Rate 0.6931547
+## 2   1 600 Rate 0.7492792
+## 
+## 
+## CIs:
+##   Contrast   Observed Alpha            L         U
+## 1    A1-A0 0.05612454  0.05 -0.007629904 0.1200614
+## 2    A1/A0 1.08096972  0.05  0.989639079 1.1841944
+## 
+## 
+## P-values:
+##   Contrast Method         P
+## 1    A1-A0   Boot 0.1386139
+## 2    A1/A0   Boot 0.1386139
+## 3    A1-A0   Perm 0.1188119
+## 4    A1/A0   Perm 0.1188119</code></pre>
+</div>
+<div id="compare-medians" class="section level3">
+<h3>Compare Medians</h3>
+<p>To find a confidence interval and p-vaue for the difference and ratio in medians <span class="math inline">\(q = 0.5\)</span>:</p>
+<pre class="r"><code>quants &lt;- CompareCICs(
+  time = cic_data$time,
+  status = cic_data$status,
+  arm = cic_data$arm,
+  sum_stat = &#39;Quantile&#39;,
+  param = 0.5,
+  reps = 100,
+  alpha = 0.05
+)
+show(quants)</code></pre>
+<pre><code>## Stats:
+##   Arm   N     Stat Observed
+## 1   0 600 Quantile       15
+## 2   1 600 Quantile        9
+## 
+## 
+## CIs:
+##   Contrast Observed Alpha    L          U
+## 1    A1-A0     -6.0  0.05 -8.0 -3.0000000
+## 2    A1/A0      0.6  0.05  0.5  0.7857143
+## 
+## 
+## P-values:
+##   Contrast Method          P
+## 1    A1-A0   Boot 0.01980198
+## 2    A1/A0   Boot 0.01980198
+## 3    A1-A0   Perm 0.01980198
+## 4    A1/A0   Perm 0.01980198</code></pre>
+</div>
 </div>
 </div>
 

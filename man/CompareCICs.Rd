@@ -8,6 +8,7 @@ CompareCICs(
   time,
   status,
   arm,
+  strata = NULL,
   sum_stat = "AUC",
   param = NULL,
   reps = 2000,
@@ -22,10 +23,12 @@ of interest.}
 
 \item{arm}{Arm, assumed to have two levels, coded 0/1.}
 
+\item{strata}{Optional stratification factor.}
+
 \item{sum_stat}{Summary statistic, from among 'AOC', 'AUC', 'Quantile', 'Rate'.}
 
-\item{param}{Either the truncation time, if `sum_stat` is 'AUC' or 'Rate', or 
-the quantile probability, if `sum_stat` is 'Quantile'.}
+\item{param}{Truncation time, if `sum_stat` is 'AOC', 'AUC', or 'Rate';
+quantile probability, if `sum_stat` is 'Quantile'.}
 
 \item{reps}{Bootstrap replicates.}
 

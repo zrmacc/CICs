@@ -1,6 +1,6 @@
 Package: CICs
 Title: Inference on Cumulative Incidence Curves
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
     person(given = "Zachary",
            family = "McCaw",

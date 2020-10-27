@@ -1,7 +1,8 @@
 # Inference for Cumulative Incidence Curves
 
 Zachary McCaw <br>
-Updated: 20-09-06
+Updated: 20-10-27
+
 
 
 ### Description
@@ -59,15 +60,15 @@ show(aucs)
 
 ```
 ## Stats:
-##   Arm   N Stat Observed
+##   Arm   N Stat      Est
 ## 1   0 600  AUC 11.81682
 ## 2   1 600  AUC 14.60295
 ## 
 ## 
 ## CIs:
 ##   Contrast Observed Alpha        L        U
-## 1    A1-A0 2.786127  0.05 1.677072 3.968014
-## 2    A1/A0 1.235776  0.05 1.132008 1.353295
+## 1    A1-A0 2.786127  0.05 1.849534 3.940872
+## 2    A1/A0 1.235776  0.05 1.152831 1.358842
 ## 
 ## 
 ## P-values:
@@ -76,6 +77,11 @@ show(aucs)
 ## 2    A1/A0   Boot 0.01980198
 ## 3    A1-A0   Perm 0.01980198
 ## 4    A1/A0   Perm 0.01980198
+## 
+## 
+## P-values:
+##   Stratum Weight Stat  N0    Stat0  N1    Stat1
+## 1       1      1  AUC 600 11.81682 600 14.60295
 ```
 
 ### Compare Event Rates
@@ -97,23 +103,28 @@ show(rates)
 
 ```
 ## Stats:
-##   Arm   N Stat  Observed
+##   Arm   N Stat       Est
 ## 1   0 600 Rate 0.6931547
 ## 2   1 600 Rate 0.7492792
 ## 
 ## 
 ## CIs:
 ##   Contrast   Observed Alpha            L         U
-## 1    A1-A0 0.05612454  0.05 -0.007629904 0.1200614
-## 2    A1/A0 1.08096972  0.05  0.989639079 1.1841944
+## 1    A1-A0 0.05612454  0.05 -0.007509571 0.1223198
+## 2    A1/A0 1.08096972  0.05  0.989430714 1.1949858
 ## 
 ## 
 ## P-values:
-##   Contrast Method         P
-## 1    A1-A0   Boot 0.1386139
-## 2    A1/A0   Boot 0.1386139
-## 3    A1-A0   Perm 0.1188119
-## 4    A1/A0   Perm 0.1188119
+##   Contrast Method          P
+## 1    A1-A0   Boot 0.11881188
+## 2    A1/A0   Boot 0.11881188
+## 3    A1-A0   Perm 0.07920792
+## 4    A1/A0   Perm 0.07920792
+## 
+## 
+## P-values:
+##   Stratum Weight Stat  N0     Stat0  N1     Stat1
+## 1       1      1 Rate 600 0.6931547 600 0.7492792
 ```
 
 ### Compare Medians
@@ -135,15 +146,15 @@ show(quants)
 
 ```
 ## Stats:
-##   Arm   N     Stat Observed
-## 1   0 600 Quantile       15
-## 2   1 600 Quantile        9
+##   Arm   N     Stat Est
+## 1   0 600 Quantile  15
+## 2   1 600 Quantile   9
 ## 
 ## 
 ## CIs:
 ##   Contrast Observed Alpha    L          U
-## 1    A1-A0     -6.0  0.05 -8.0 -3.0000000
-## 2    A1/A0      0.6  0.05  0.5  0.7857143
+## 1    A1-A0     -6.0  0.05 -8.0 -4.0000000
+## 2    A1/A0      0.6  0.05  0.5  0.7333333
 ## 
 ## 
 ## P-values:
@@ -152,4 +163,9 @@ show(quants)
 ## 2    A1/A0   Boot 0.01980198
 ## 3    A1-A0   Perm 0.01980198
 ## 4    A1/A0   Perm 0.01980198
+## 
+## 
+## P-values:
+##   Stratum Weight     Stat  N0 Stat0  N1 Stat1
+## 1       1      1 Quantile 600    15 600     9
 ```

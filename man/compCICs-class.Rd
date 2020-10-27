@@ -19,5 +19,7 @@ Defines the object class returned by \code{\link{CompareCICs}}.
 \item{\code{Reps}}{Bootstrap and permutation statistics.}
 
 \item{\code{Stats}}{Observed test statistics.}
+
+\item{\code{Weights}}{Per-stratum weights and statistics.}
 }}
 

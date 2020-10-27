@@ -4,15 +4,18 @@
 \alias{TabulateCIC}
 \title{Tabulate CIC}
 \usage{
-TabulateCIC(fit)
+TabulateCIC(time, status)
 }
 \arguments{
-\item{fit}{Fitted object of class "cuminc".}
+\item{time}{Observation time.}
+
+\item{status}{Event status. The event coded as 1 is assumed to be the event
+of interest.}
 }
 \value{
 Data.frame containing `Time`, the estimated `CIC`, the variance `Var_CIC` of the
   CIC, and event `Status`.
 }
 \description{
-Converts from the list returned by \code{\link[cmprsk]{cuminc}}.
+Converts the list returned by \code{\link[cmprsk]{cuminc}} into a table.
 }

@@ -4,7 +4,7 @@
 \alias{SumStats}
 \title{Calculate Difference and Ratio in Summary Stats}
 \usage{
-SumStats(data0, data1, sum_stat = "AUC", param, return_per_arm = FALSE)
+SumStats(data0, data1, sum_stat = "AUC", param, return_strata = FALSE)
 }
 \arguments{
 \item{data0}{Data.frame containing `time` and `status` for arm 0.}
@@ -16,16 +16,16 @@ SumStats(data0, data1, sum_stat = "AUC", param, return_per_arm = FALSE)
 \item{param}{Truncation time, if `sum_stat` is 'AOC', 'AUC', 'Rate';
 the quantile probability, if `sum_stat` is 'Quantile'.}
 
-\item{return_per_arm}{Return per-Arm stats and CICs?}
+\item{return_strata}{Return per_stratum stats and CICs?}
 }
 \value{
-If `return_per_arm == TRUE`, list containing:
+If `return_per_arm`, list containing:
 \itemize{
-  \item `cic`, tabulated cumulative incidence curves.
-  \item `per_arm`, the per-arm summary statistics. 
-  \item `stats`, including the difference and ratio of summary statistics. 
+  \item `contrasts`, difference and ratio of summary statistics. 
+  \item `curves`, list of tabulated cumulative incidence curves.
+  \item `marg`, marginal summary statistics.
+  \item `weights`, per-stratum summary statistics.
 }
- If `return_per_arm == FALSE`, only `stats` is returned.
 }
 \description{
 Calculate Difference and Ratio in Summary Stats

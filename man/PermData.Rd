@@ -2,7 +2,7 @@
 % Please edit documentation in R/Bootstrap.R
 \name{PermData}
 \alias{PermData}
-\title{Generate Bootstrap Data.frame}
+\title{Generate Permuted Data.frame}
 \usage{
 PermData(data)
 }
@@ -13,5 +13,5 @@ PermData(data)
 Permuted data.frame.
 }
 \description{
-Generate Bootstrap Data.frame
+Generate Permuted Data.frame
 }

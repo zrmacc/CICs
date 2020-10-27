@@ -62,12 +62,13 @@ FindQuantile <- function(times, probs, q) {
 }
 
 
+# -----------------------------------------------------------------------------
+
 #' Find Summary Statistic
 #' 
 #' Calculate a summary statistic from a cumulative incidence curve. 
 #'
-#' @param times CIC times.
-#' @param probs CIC probabilities.
+#' @param data Data.frame containing `time` and `status`.
 #' @param sum_stat Summary statistic, from among 'AUC', 'Quantile', 'Rate'.
 #' @param param Either the truncation time, if `sum_stat` is 'AUC' or 'Rate', or 
 #'   the quantile probability, if `sum_stat` is 'Quantile'.
@@ -75,11 +76,16 @@ FindQuantile <- function(times, probs, q) {
 #' @export 
 
 FindStat <- function(
-  times,
-  probs,
+  data,
   sum_stat,
   param
 ) {
+  
+  # Construct cumulative incidence curve.
+  tab <- TabulateCIC(time = data$time, status = data$status)
+  times <- tab$Time[tab$Status == 1]
+  probs <- tab$CIC[tab$Status == 1]
+  
   out <- NULL
   if (sum_stat == 'AOC') {
     out <- FindAOC(times = times, probs = probs, tau = param)
@@ -103,69 +109,93 @@ FindStat <- function(
 #' @param sum_stat Summary statistic, from among 'AOC', 'AUC', 'Quantile', 'Rate'.
 #' @param param Truncation time, if `sum_stat` is 'AOC', 'AUC', 'Rate';
 #'   the quantile probability, if `sum_stat` is 'Quantile'.
-#' @param return_per_arm Return per-Arm stats and CICs?
-#' @importFrom cmprsk cuminc
-#' @return If `return_per_arm == TRUE`, list containing:
+#' @param return_strata Return per_stratum stats and CICs?
+#' @return If `return_per_arm`, list containing:
 #' \itemize{
-#'   \item `cic`, tabulated cumulative incidence curves.
-#'   \item `per_arm`, the per-arm summary statistics. 
-#'   \item `stats`, including the difference and ratio of summary statistics. 
+#'   \item `contrasts`, difference and ratio of summary statistics. 
+#'   \item `curves`, list of tabulated cumulative incidence curves.
+#'   \item `marg`, marginal summary statistics.
+#'   \item `weights`, per-stratum summary statistics.
 #' }
-#'  If `return_per_arm == FALSE`, only `stats` is returned. 
 
 SumStats <- function(
   data0, 
   data1, 
   sum_stat = 'AUC',
   param,
-  return_per_arm = FALSE
+  return_strata = FALSE
 ) {
   
-  # Fit cumulative incidence curves (CICs). 
-  fit0 <- cuminc(ftime = data0$time, fstatus = data0$status)
-  fit1 <- cuminc(ftime = data1$time, fstatus = data1$status)
+  # Partition by strata.
+  data1_strata <- split(data1, data1$strata, drop = TRUE)
+  data0_strata <- split(data0, data0$strata, drop = TRUE)
   
-  # Tabulate CICs.
-  tab0 <- TabulateCIC(fit0)
-  tab1 <- TabulateCIC(fit1)
+  # Stratum sizes.
+  data1_sizes <- sapply(data1_strata, nrow)
+  data0_sizes <- sapply(data0_strata, nrow)
+  sizes <- data1_sizes + data0_sizes
+  weights <- sizes / sum(sizes)
   
-  # CICs.
-  tab0$Arm <- 0
-  tab1$Arm <- 1
-  curves <- rbind(tab0, tab1)
+  # Stats.
+  stratum_stat <- function(x) {FindStat(data = x, sum_stat = sum_stat, param = param)}
+  data1_stats <- sapply(data1_strata, stratum_stat)
+  data0_stats <- sapply(data0_strata, stratum_stat)
   
-  # Summary statistics. 
-  stat0 <- FindStat(
-    times = tab0$Time[tab0$Status == 1],
-    probs = tab0$CIC[tab0$Status == 1],
-    sum_stat = sum_stat,
-    param = param
-  )
-  stat1 <- FindStat(
-    times = tab1$Time[tab1$Status == 1],
-    probs = tab1$CIC[tab1$Status == 1],
-    sum_stat = sum_stat,
-    param = param
-  )
+  # Final stats.
+  stat1 <- sum(data1_stats * weights)
+  stat0 <- sum(data0_stats * weights)
   
-  # Per arm summary statistics. 
-  per_arm_stats <- data.frame(
-    'Arm' = c(0, 1),
-    'N' = c(nrow(data0), nrow(data1)),
-    'Stat' = rep(sum_stat, times = 2),
-    'Observed' = c(stat0, stat1)
-  )
-  
-  # Difference and ratio
+  # Contrasts.
   diff <- stat1 - stat0
   ratio <- stat1 / stat0
-  stats <- c('diff' = diff, 'ratio' = ratio)
+  contrasts <- c('diff' = diff, 'ratio' = ratio)
   
-  # Output
-  if(return_per_arm){
-    out <- list('cic' = curves, 'per_arm' = per_arm_stats, 'stats' = stats)
+  # Output.
+  if (return_strata) {
+    
+    # Cumulative incidence curves.
+    stratum_curve <- function(x) {TabulateCIC(time = x$time, status = x$status)}
+    strata_names <- names(data1_sizes)
+    curves1 <- lapply(data1_strata, stratum_curve)
+    curves0 <- lapply(data0_strata, stratum_curve)
+    curves <- lapply(strata_names, function(name) {
+      curve1 <- curves1[[name]]
+      curve1$Arm <- 1
+      curve0 <- curves0[[name]]
+      curve0$Arm <- 0
+      out <- rbind(curve1, curve0)
+      out$Stratum <- name
+      return(out)
+    })
+    curves <- do.call(rbind, curves)
+    
+    # Marginal summary statistics.
+    marg_df <- data.frame(
+      'Arm' = c(0, 1),
+      'N' = c(sum(data0_sizes), sum(data1_sizes)),
+      'Stat' = sum_stat,
+      'Est' = c(stat0, stat1)
+    )
+    
+    # Per-stratum summary statistics.
+    weights_df <- data.frame(
+      'Stratum' = names(data1_sizes),
+      'Weight' = weights,
+      'Stat' = sum_stat,
+      'N0' = data0_sizes,
+      'Stat0' = data0_stats,
+      'N1' = data1_sizes,
+      'Stat1' = data1_stats
+    )
+    
+    out <- list(
+      'contrasts' = contrasts,
+      'curves' = curves,
+      'marg' = marg_df,
+      'weights' = weights_df
+    )
   } else {
-    out <- stats
+    out <- contrasts
   }
   return(out)
 }

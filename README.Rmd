@@ -10,7 +10,7 @@ output:
 # Inference for Cumulative Incidence Curves
 
 Zachary McCaw <br>
-Updated: 20-09-06
+Updated: 20-10-27
 
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(cache = TRUE)

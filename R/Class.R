@@ -7,6 +7,8 @@
 #' @slot Pvals Bootstrap and permutation p-values.
 #' @slot Reps Bootstrap and permutation statistics. 
 #' @slot Stats Observed test statistics. 
+#' @slot Weights Per-stratum weights and statistics. 
+#' 
 #' @name compCICs-class
 #' @rdname compCICs-class
 #' @exportClass compCICs
@@ -18,7 +20,8 @@ setClass(
    Curves = "data.frame",
    Pvals = "data.frame",
    Reps = "matrix",
-   Stats = "data.frame"
+   Stats = "data.frame",
+   Weights = "data.frame"
   )
 )
 
@@ -49,6 +52,11 @@ print.compCICs <- function (x, ...) {
   # P-values.
   cat('P-values:\n')
   show(x@Pvals)
+  cat('\n\n')
+  
+  # Weights.
+  cat('P-values:\n')
+  show(x@Weights)
   cat('\n\n')
 
 }

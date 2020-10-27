@@ -7,9 +7,10 @@
 #' @param status Event status. The event coded as 1 is assumed to be the event
 #'   of interest.
 #' @param arm Arm, assumed to have two levels, coded 0/1.
+#' @param strata Optional stratification factor. 
 #' @param sum_stat Summary statistic, from among 'AOC', 'AUC', 'Quantile', 'Rate'.
-#' @param param Either the truncation time, if `sum_stat` is 'AUC' or 'Rate', or 
-#'   the quantile probability, if `sum_stat` is 'Quantile'.
+#' @param param Truncation time, if `sum_stat` is 'AOC', 'AUC', or 'Rate';
+#'   quantile probability, if `sum_stat` is 'Quantile'.
 #' @param reps Bootstrap replicates.
 #' @param alpha Alpha level.
 #' @importFrom methods new
@@ -28,6 +29,7 @@ CompareCICs <- function(
   time, 
   status, 
   arm, 
+  strata = NULL,
   sum_stat = 'AUC',
   param = NULL,
   reps = 2000, 
@@ -42,9 +44,13 @@ CompareCICs <- function(
     stop('Sum stat not available.')
   }
   
+  # Create single stratum if no strata are provided. 
+  if (is.null(strata)){
+    strata <- rep(1, length(time))
+  }
+  
   # Data.
-  data <- data.frame(time, status, arm)
-  n <- nrow(data)
+  data <- data.frame(time, status, arm, strata)
   
   # Split data.
   data1 <- data[data$arm == 1, ]
@@ -65,16 +71,16 @@ CompareCICs <- function(
     data1 = data1, 
     sum_stat = sum_stat,
     param = param,
-    return_per_arm = TRUE
+    return_strata = TRUE
   )
-  obs_stats <- obs$stats
+  obs_stats <- obs$contrasts
   
   # Bootstrap function.
   aux <- function(b) {
     
     # Bootstrap data sets.
-    boot1 <- BootData(data1)
-    boot0 <- BootData(data0)
+    boot1 <- StratBoot(data1)
+    boot0 <- StratBoot(data0)
     
     # Bootstrap statistics.
     boot_stats <- SumStats(
@@ -89,7 +95,7 @@ CompareCICs <- function(
     boot_ind <- 1 * (sign(boot_stats[1]) != sign(obs_stats[1]))
     
     # Permuted data.
-    perm_data <- PermData(data)
+    perm_data <- StratPerm(data)
     perm0 <- perm_data[perm_data$arm == 0, ]
     perm1 <- perm_data[perm_data$arm == 1, ]
     perm_stats <- SumStats(
@@ -122,7 +128,7 @@ CompareCICs <- function(
     return(out)
   }
   
-  # Bootstrapping. 
+  # Simulation. 
   sim <- lapply(seq(1:reps), aux)
   sim <- do.call(rbind, sim)
   
@@ -163,10 +169,11 @@ CompareCICs <- function(
   out <- new(
     Class = 'compCICs',
     CIs = cis,
-    Curves = obs$cic,
+    Curves = obs$curves,
     Reps = sim[, 1:4],
     Pvals = pval,
-    Stats = obs$per_arm
+    Stats = obs$marg,
+    Weights = obs$weights
   )
   return(out)
 }

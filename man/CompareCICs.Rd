@@ -22,7 +22,7 @@ of interest.}
 
 \item{arm}{Arm, assumed to have two levels, coded 0/1.}
 
-\item{sum_stat}{Summary statistic, from among 'AUC', 'Quantile', 'Rate'.}
+\item{sum_stat}{Summary statistic, from among 'AOC', 'AUC', 'Quantile', 'Rate'.}
 
 \item{param}{Either the truncation time, if `sum_stat` is 'AUC' or 'Rate', or 
 the quantile probability, if `sum_stat` is 'Quantile'.}

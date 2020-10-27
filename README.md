@@ -4,7 +4,6 @@ Zachary McCaw <br>
 Updated: 20-09-06
 
 
-
 ### Description
 
 This package provides functions for inference on the difference in AUCs, event rates, and quantiles comparing two cumulative incidence curves. Also see [MCC](https://github.com/zrmacc/MCC) for inference on mean cumulative count curves. 

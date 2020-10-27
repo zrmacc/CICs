@@ -10,6 +10,7 @@ BootData <- function (data) {
   return(out)
 }
 
+
 #' Generate Bootstrap Data.frame
 #'
 #' @param data Data.frame containing `arm`.

@@ -7,7 +7,7 @@
 #' @param status Event status. The event coded as 1 is assumed to be the event
 #'   of interest.
 #' @param arm Arm, assumed to have two levels, coded 0/1.
-#' @param sum_stat Summary statistic, from among 'AUC', 'Quantile', 'Rate'.
+#' @param sum_stat Summary statistic, from among 'AOC', 'AUC', 'Quantile', 'Rate'.
 #' @param param Either the truncation time, if `sum_stat` is 'AUC' or 'Rate', or 
 #'   the quantile probability, if `sum_stat` is 'Quantile'.
 #' @param reps Bootstrap replicates.
@@ -35,7 +35,7 @@ CompareCICs <- function(
 ) {
   
   # Check sum stat.
-  sum_stat_choices <- c('AUC', 'Quantile', 'Rate')
+  sum_stat_choices <- c('AOC', 'AUC', 'Quantile', 'Rate')
   if (!sum_stat %in% sum_stat_choices) {
     cat('Select sum_stat from:\n')
     cat(sum_stat_choices)
@@ -52,7 +52,7 @@ CompareCICs <- function(
   
   # Default sum stat param.
   if (is.null(param)) {
-    if (sum_stat %in% c('AUC', 'Rate')) {
+    if (sum_stat %in% c('AOC', 'AUC', 'Rate')) {
       param = min(max(data1$time), max(data0$time))
     } else if (sum_stat == 'Quantile') {
       param = 0.5

@@ -18,6 +18,18 @@ FindAUC <- function(times, probs, tau) {
 }
 
 
+#' Find Area Over the Cumulative Incidence Curve.
+#'
+#' @param times CIC times.
+#' @param probs CIC probabilities.
+#' @param tau Truncation time.
+
+FindAOC <- function(times, probs, tau) {
+  area <- tau - FindAUC(times, probs, tau)
+  return(area)
+}
+
+
 #' Find Event Rate at Time tau.
 #'
 #' @param times CIC times.
@@ -69,7 +81,9 @@ FindStat <- function(
   param
 ) {
   out <- NULL
-  if (sum_stat == 'AUC') {
+  if (sum_stat == 'AOC') {
+    out <- FindAOC(times = times, probs = probs, tau = param)
+  } else if (sum_stat == 'AUC') {
     out <- FindAUC(times = times, probs = probs, tau = param)
   } else if (sum_stat == 'Quantile') {
     out <- FindQuantile(times = times, probs = probs, q = param)
@@ -79,14 +93,15 @@ FindStat <- function(
   return(out)
 }
 
+
 # -----------------------------------------------------------------------------
 
 #' Calculate Difference and Ratio in Summary Stats
 #' 
 #' @param data0 Data.frame containing `time` and `status` for arm 0.
 #' @param data1 Data.frame containing `time` and `status` for arm 1.
-#' @param sum_stat Summary statistic, from among 'AUC', 'Quantile', 'Rate'.
-#' @param param Either the truncation time, if `sum_stat` is 'AUC' or 'Rate', or 
+#' @param sum_stat Summary statistic, from among 'AOC', 'AUC', 'Quantile', 'Rate'.
+#' @param param Truncation time, if `sum_stat` is 'AOC', 'AUC', 'Rate';
 #'   the quantile probability, if `sum_stat` is 'Quantile'.
 #' @param return_per_arm Return per-Arm stats and CICs?
 #' @importFrom cmprsk cuminc

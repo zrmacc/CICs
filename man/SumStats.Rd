@@ -11,9 +11,9 @@ SumStats(data0, data1, sum_stat = "AUC", param, return_per_arm = FALSE)
 
 \item{data1}{Data.frame containing `time` and `status` for arm 1.}
 
-\item{sum_stat}{Summary statistic, from among 'AUC', 'Quantile', 'Rate'.}
+\item{sum_stat}{Summary statistic, from among 'AOC', 'AUC', 'Quantile', 'Rate'.}
 
-\item{param}{Either the truncation time, if `sum_stat` is 'AUC' or 'Rate', or 
+\item{param}{Truncation time, if `sum_stat` is 'AOC', 'AUC', 'Rate';
 the quantile probability, if `sum_stat` is 'Quantile'.}
 
 \item{return_per_arm}{Return per-Arm stats and CICs?}

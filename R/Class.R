@@ -55,7 +55,7 @@ print.compCICs <- function (x, ...) {
   cat('\n\n')
   
   # Weights.
-  cat('P-values:\n')
+  cat('Weights:\n')
   show(x@Weights)
   cat('\n\n')
 

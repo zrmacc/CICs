@@ -419,8 +419,8 @@ show(aucs)</code></pre>
 ## 
 ## CIs:
 ##   Contrast Observed Alpha        L        U
-## 1    A1-A0 2.786127  0.05 1.849534 3.940872
-## 2    A1/A0 1.235776  0.05 1.152831 1.358842
+## 1    A1-A0 2.786127  0.05 1.832637 3.633027
+## 2    A1/A0 1.235776  0.05 1.148684 1.323444
 ## 
 ## 
 ## P-values:
@@ -431,9 +431,9 @@ show(aucs)</code></pre>
 ## 4    A1/A0   Perm 0.01980198
 ## 
 ## 
-## P-values:
-##   Stratum Weight Stat  N0    Stat0  N1    Stat1
-## 1       1      1  AUC 600 11.81682 600 14.60295</code></pre>
+## Weights:
+##   Stratum Weight Stat  N0    Stat0  N1    Stat1     Diff    Ratio
+## 1       1      1  AUC 600 11.81682 600 14.60295 2.786127 1.235776</code></pre>
 </div>
 <div id="compare-event-rates" class="section level3">
 <h3>Compare Event Rates</h3>
@@ -455,22 +455,22 @@ show(rates)</code></pre>
 ## 
 ## 
 ## CIs:
-##   Contrast   Observed Alpha            L         U
-## 1    A1-A0 0.05612454  0.05 -0.007509571 0.1223198
-## 2    A1/A0 1.08096972  0.05  0.989430714 1.1949858
+##   Contrast   Observed Alpha           L         U
+## 1    A1-A0 0.05612454  0.05 -0.01547791 0.1373532
+## 2    A1/A0 1.08096972  0.05  0.97927765 1.2147773
 ## 
 ## 
 ## P-values:
-##   Contrast Method          P
-## 1    A1-A0   Boot 0.11881188
-## 2    A1/A0   Boot 0.11881188
-## 3    A1-A0   Perm 0.07920792
-## 4    A1/A0   Perm 0.07920792
+##   Contrast Method         P
+## 1    A1-A0   Boot 0.1386139
+## 2    A1/A0   Boot 0.1386139
+## 3    A1-A0   Perm 0.1386139
+## 4    A1/A0   Perm 0.1386139
 ## 
 ## 
-## P-values:
-##   Stratum Weight Stat  N0     Stat0  N1     Stat1
-## 1       1      1 Rate 600 0.6931547 600 0.7492792</code></pre>
+## Weights:
+##   Stratum Weight Stat  N0     Stat0  N1     Stat1       Diff   Ratio
+## 1       1      1 Rate 600 0.6931547 600 0.7492792 0.05612454 1.08097</code></pre>
 </div>
 <div id="compare-medians" class="section level3">
 <h3>Compare Medians</h3>
@@ -493,8 +493,8 @@ show(quants)</code></pre>
 ## 
 ## CIs:
 ##   Contrast Observed Alpha    L          U
-## 1    A1-A0     -6.0  0.05 -8.0 -4.0000000
-## 2    A1/A0      0.6  0.05  0.5  0.7333333
+## 1    A1-A0     -6.0  0.05 -8.0 -3.0000000
+## 2    A1/A0      0.6  0.05  0.5  0.7853846
 ## 
 ## 
 ## P-values:
@@ -505,9 +505,9 @@ show(quants)</code></pre>
 ## 4    A1/A0   Perm 0.01980198
 ## 
 ## 
-## P-values:
-##   Stratum Weight     Stat  N0 Stat0  N1 Stat1
-## 1       1      1 Quantile 600    15 600     9</code></pre>
+## Weights:
+##   Stratum Weight     Stat  N0 Stat0  N1 Stat1 Diff Ratio
+## 1       1      1 Quantile 600    15 600     9   -6   0.6</code></pre>
 </div>
 </div>
 </div>

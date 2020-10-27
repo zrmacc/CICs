@@ -187,6 +187,8 @@ SumStats <- function(
       'N1' = data1_sizes,
       'Stat1' = data1_stats
     )
+    weights_df$Diff <- weights_df$Stat1 - weights_df$Stat0
+    weights_df$Ratio <- weights_df$Stat1 / weights_df$Stat0
     
     out <- list(
       'contrasts' = contrasts,

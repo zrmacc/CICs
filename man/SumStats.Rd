@@ -4,12 +4,10 @@
 \alias{SumStats}
 \title{Calculate Difference and Ratio in Summary Stats}
 \usage{
-SumStats(data0, data1, sum_stat = "AUC", param, return_strata = FALSE)
+SumStats(data, sum_stat = "AUC", param, return_strata = FALSE)
 }
 \arguments{
-\item{data0}{Data.frame containing `time` and `status` for arm 0.}
-
-\item{data1}{Data.frame containing `time` and `status` for arm 1.}
+\item{data}{Data.frame containing 'time', 'status', 'arm', 'strata'.}
 
 \item{sum_stat}{Summary statistic, from among 'AOC', 'AUC', 'Quantile', 'Rate'.}
 

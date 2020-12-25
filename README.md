@@ -1,7 +1,7 @@
 # Inference for Cumulative Incidence Curves
 
 Zachary McCaw <br>
-Updated: 20-10-27
+Updated: 20-12-24
 
 
 
@@ -13,45 +13,61 @@ This package provides functions for inference on the difference in AUCs, event r
 
 
 ```r
-devtools::install_github(repo = 'zrmacc/CICs')
+devtools::install_github(repo = "zrmacc/CICs")
 ```
 
 ## Examples
 
 ### Data
 
-Synthetic example data in the format expected by this package may be loaded via:
+The function `GenTwoSampleData` simulates example data in the format expected by this package. The censoring, event, and death times are drawn from independent exponential distributions. Note that 'rate' refers to the arrival rate of the corresponding exponential rather than the proportion of the sample. 
 
 
 ```r
 library(CICs)
-data(cic_data)
-head(cic_data)
+
+# Generate data.
+data <- GenTwoSampleData(
+  n1 = 200,
+  n0 = 200,
+  censor_rate1 = 0.25,
+  censor_rate0 = 0.25,
+  event_rate1 = 0.50,
+  event_rate0 = 0.75,
+  death_rate1 = 0.25,
+  death_rate0 = 0.25
+)
+
+# Add strata.
+strata <- rmultinom(n = 400, size = 1, prob = c(0.3, 0.4, 0.3))
+data$strata <- apply(strata, 2, which.max)
+head(data)
 ```
 
 ```
-##   arm time status
-## 1   0    1      0
-## 2   0    1      1
-## 3   0    1      1
-## 4   0    1      1
-## 5   0    1      1
-## 6   0    1      1
+##        time status arm strata
+## 1 1.5342347      0   1      1
+## 2 1.8967266      0   1      2
+## 3 0.2310048      1   1      2
+## 4 1.0370315      0   1      3
+## 5 1.0091773      1   1      2
+## 6 0.3223376      0   1      3
 ```
 
-In these data, `arm` is the treatment arm, 0 for reference, 1 for treatment; `time` is the observation time in days; and `status` is the event type, 0 for censoring, 1 for recovery, 2 for death. For analysing other data sets, `arm` should likewise be coded 0/1, and the event with status 1 is assumed to be the event of interest. 
+In these data, `arm` is the treatment arm, 0 for reference, 1 for treatment; `time` is the observation time; and `status` is the event type, 0 for censoring, 1 for an event, 2 for death. For analysing other data sets, `arm` should likewise be coded as 0/1, and status as 0/1/2, with status 1 identifying the event of interest.
 
 ### Compare AUCs
 
-To find a confidence interval and p-vaue for the difference and ratio in areas under the curve at $\tau = 28$ days:
+To find a confidence interval and p-vaue for the difference and ratio in areas under the cumulative incidence curve at time $\tau = 2$:
 
 ```r
 aucs <- CompareCICs(
-  time = cic_data$time,
-  status = cic_data$status,
-  arm = cic_data$arm,
-  sum_stat = 'AUC',
-  param = 28,
+  time = data$time,
+  status = data$status,
+  arm = data$arm,
+  strata = data$strata,
+  sum_stat = "AUC",
+  param = 2,
   reps = 100,
   alpha = 0.05
 )
@@ -59,30 +75,36 @@ show(aucs)
 ```
 
 ```
-## Stats:
-##   Arm   N Stat      Est
-## 1   0 600  AUC 11.81682
-## 2   1 600  AUC 14.60295
+## Marginal Stats:
+## # A tibble: 2 x 4
+##     arm stat      n   est
+##   <dbl> <chr> <int> <dbl>
+## 1     0 AUC     200 0.795
+## 2     1 AUC     200 0.554
 ## 
 ## 
 ## CIs:
-##   Contrast Observed Alpha        L        U
-## 1    A1-A0 2.786127  0.05 1.832637 3.633027
-## 2    A1/A0 1.235776  0.05 1.148684 1.323444
+##            contrast        est      lower      upper
+## boot_diff     A1-A0 -0.2413093 -0.3842677 -0.1174986
+## boot_ratio    A1/A0  0.6964183  0.5420529  0.8408382
 ## 
 ## 
 ## P-values:
-##   Contrast Method          P
-## 1    A1-A0   Boot 0.01980198
-## 2    A1/A0   Boot 0.01980198
-## 3    A1-A0   Perm 0.01980198
-## 4    A1/A0   Perm 0.01980198
+##   contrast        est     perm_p     boot_p
+## 1    A1-A0 -0.2413093 0.01980198 0.01980198
+## 2    A1/A0  0.6964183 0.01980198 0.01980198
 ## 
 ## 
-## Weights:
-##   Stratum Weight Stat  N0    Stat0  N1    Stat1     Diff    Ratio
-## 1       1      1  AUC 600 11.81682 600 14.60295 2.786127 1.235776
+## Stratum Stats:
+## # A tibble: 3 x 9
+##   strata weight stat     n0    n1  est0  est1    diff ratio
+##    <int>  <dbl> <chr> <int> <int> <dbl> <dbl>   <dbl> <dbl>
+## 1      1  0.295 AUC      52    66 0.869 0.533 -0.337  0.613
+## 2      2  0.442 AUC      91    86 0.776 0.475 -0.301  0.612
+## 3      3  0.262 AUC      57    48 0.742 0.709 -0.0334 0.955
 ```
+
+Replace "AUC" by "AOC" for area over the cumulative incidence curve.
 
 ### Compare Event Rates
 
@@ -90,11 +112,12 @@ To find a confidence interval and p-vaue for the difference and ratio in event r
 
 ```r
 rates <- CompareCICs(
-  time = cic_data$time,
-  status = cic_data$status,
-  arm = cic_data$arm,
+  time = data$time,
+  status = data$status,
+  arm = data$arm,
+  strata = data$strata,
   sum_stat = 'Rate',
-  param = 28,
+  param = 2,
   reps = 100,
   alpha = 0.05
 )
@@ -102,29 +125,33 @@ show(rates)
 ```
 
 ```
-## Stats:
-##   Arm   N Stat       Est
-## 1   0 600 Rate 0.6931547
-## 2   1 600 Rate 0.7492792
+## Marginal Stats:
+## # A tibble: 2 x 4
+##     arm stat      n   est
+##   <dbl> <chr> <int> <dbl>
+## 1     0 Rate    200 0.637
+## 2     1 Rate    200 0.428
 ## 
 ## 
 ## CIs:
-##   Contrast   Observed Alpha           L         U
-## 1    A1-A0 0.05612454  0.05 -0.01547791 0.1373532
-## 2    A1/A0 1.08096972  0.05  0.97927765 1.2147773
+##            contrast        est      lower      upper
+## boot_diff     A1-A0 -0.2088132 -0.2936807 -0.1178695
+## boot_ratio    A1/A0  0.6721585  0.5598392  0.8010745
 ## 
 ## 
 ## P-values:
-##   Contrast Method         P
-## 1    A1-A0   Boot 0.1386139
-## 2    A1/A0   Boot 0.1386139
-## 3    A1-A0   Perm 0.1386139
-## 4    A1/A0   Perm 0.1386139
+##   contrast        est     perm_p     boot_p
+## 1    A1-A0 -0.2088132 0.01980198 0.01980198
+## 2    A1/A0  0.6721585 0.01980198 0.01980198
 ## 
 ## 
-## Weights:
-##   Stratum Weight Stat  N0     Stat0  N1     Stat1       Diff   Ratio
-## 1       1      1 Rate 600 0.6931547 600 0.7492792 0.05612454 1.08097
+## Stratum Stats:
+## # A tibble: 3 x 9
+##   strata weight stat     n0    n1  est0  est1    diff ratio
+##    <int>  <dbl> <chr> <int> <int> <dbl> <dbl>   <dbl> <dbl>
+## 1      1  0.295 Rate     52    66 0.703 0.442 -0.260  0.630
+## 2      2  0.442 Rate     91    86 0.616 0.365 -0.250  0.593
+## 3      3  0.262 Rate     57    48 0.599 0.518 -0.0808 0.865
 ```
 
 ### Compare Medians
@@ -133,9 +160,10 @@ To find a confidence interval and p-vaue for the difference and ratio in medians
 
 ```r
 quants <- CompareCICs(
-  time = cic_data$time,
-  status = cic_data$status,
-  arm = cic_data$arm,
+  time = data$time,
+  status = data$status,
+  arm = data$arm,
+  strata = data$strata,
   sum_stat = 'Quantile',
   param = 0.5,
   reps = 100,
@@ -145,27 +173,31 @@ show(quants)
 ```
 
 ```
-## Stats:
-##   Arm   N     Stat Est
-## 1   0 600 Quantile  15
-## 2   1 600 Quantile   9
+## Marginal Stats:
+## # A tibble: 2 x 4
+##     arm stat         n   est
+##   <dbl> <chr>    <int> <dbl>
+## 1     0 Quantile   200  1.24
+## 2     1 Quantile   200  2.17
 ## 
 ## 
 ## CIs:
-##   Contrast Observed Alpha    L          U
-## 1    A1-A0     -6.0  0.05 -8.0 -3.0000000
-## 2    A1/A0      0.6  0.05  0.5  0.7853846
+##            contrast       est     lower upper
+## boot_diff     A1-A0 0.9271617 0.3817628   Inf
+## boot_ratio    A1/A0 1.7462949 1.2497082   Inf
 ## 
 ## 
 ## P-values:
-##   Contrast Method          P
-## 1    A1-A0   Boot 0.01980198
-## 2    A1/A0   Boot 0.01980198
-## 3    A1-A0   Perm 0.01980198
-## 4    A1/A0   Perm 0.01980198
+##   contrast       est     perm_p     boot_p
+## 1    A1-A0 0.9271617 0.07920792 0.01980198
+## 2    A1/A0 1.7462949 0.05940594 0.01980198
 ## 
 ## 
-## Weights:
-##   Stratum Weight     Stat  N0 Stat0  N1 Stat1 Diff Ratio
-## 1       1      1 Quantile 600    15 600     9   -6   0.6
+## Stratum Stats:
+## # A tibble: 3 x 9
+##   strata weight stat        n0    n1  est0  est1   diff ratio
+##    <int>  <dbl> <chr>    <int> <int> <dbl> <dbl>  <dbl> <dbl>
+## 1      1  0.295 Quantile    52    66 0.952  2.58 1.62    2.71
+## 2      2  0.442 Quantile    91    86 1.34   2.33 0.993   1.74
+## 3      3  0.262 Quantile    57    48 1.40   1.44 0.0336  1.02
 ```

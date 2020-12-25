@@ -10,16 +10,16 @@ Defines the object class returned by \code{\link{CompareCICs}}.
 \section{Slots}{
 
 \describe{
-\item{\code{CIs}}{Confidence intervals.}
+\item{\code{cis}}{Confidence intervals.}
 
-\item{\code{Curves}}{Cumulative incidence curves.}
+\item{\code{cics}}{Cumulative incidence curves.}
 
-\item{\code{Pvals}}{Bootstrap and permutation p-values.}
+\item{\code{pvals}}{Bootstrap and permutation p-values.}
 
-\item{\code{Reps}}{Bootstrap and permutation statistics.}
+\item{\code{reps}}{Bootstrap and permutation statistics.}
 
-\item{\code{Stats}}{Observed test statistics.}
+\item{\code{marg_stats}}{Observed test statistics.}
 
-\item{\code{Weights}}{Per-stratum weights and statistics.}
+\item{\code{stratum_stats}}{Per-stratum weights and statistics.}
 }}
 

@@ -37,11 +37,12 @@ quantile probability, if `sum_stat` is 'Quantile'.}
 \value{
 Object of class \code{compCICs} containing:
 \itemize{
-  \item `@CIs`: Observed difference and ratio in areas with confidence intervals. 
-  \item `@Curves`: Cumulative incidence curves. 
-  \item `@Pvals`: Bootstrap and permutation p-values.
-  \item `@Reps`: Bootstrap and permutation realizations of the test statistics. 
-  \item `@Stats`: Observed test statistics. 
+  \item `@cis`: Observed difference and ratio in areas with confidence intervals. 
+  \item `@cics`: Cumulative incidence curves. 
+  \item `@pvals`: Bootstrap and permutation p-values.
+  \item `@reps`: Bootstrap and permutation realizations of the test statistics. 
+  \item `@marg_stats`: Marginal test statistics. 
+  \item `@stratum_stats`: Stratum test statistics.
 }
 }
 \description{

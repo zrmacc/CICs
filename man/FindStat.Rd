@@ -4,10 +4,12 @@
 \alias{FindStat}
 \title{Find Summary Statistic}
 \usage{
-FindStat(data, sum_stat, param)
+FindStat(time, status, sum_stat, param)
 }
 \arguments{
-\item{data}{Data.frame containing `time` and `status`.}
+\item{time}{Observation time.}
+
+\item{status}{Status indicator.}
 
 \item{sum_stat}{Summary statistic, from among 'AUC', 'Quantile', 'Rate'.}
 

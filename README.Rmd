@@ -10,7 +10,7 @@ output:
 # Inference for Cumulative Incidence Curves
 
 Zachary McCaw <br>
-Updated: 20-10-27
+Updated: 20-12-24
 
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(cache = TRUE)
@@ -23,49 +23,68 @@ This package provides functions for inference on the difference in AUCs, event r
 ## Installation
 
 ```{R, eval=FALSE}
-devtools::install_github(repo = 'zrmacc/CICs')
+devtools::install_github(repo = "zrmacc/CICs")
 ```
 
 ## Examples
 
 ### Data
 
-Synthetic example data in the format expected by this package may be loaded via:
+The function `GenTwoSampleData` simulates example data in the format expected by this package. The censoring, event, and death times are drawn from independent exponential distributions. Note that 'rate' refers to the arrival rate of the corresponding exponential rather than the proportion of the sample. 
 
 ```{R}
 library(CICs)
-data(cic_data)
-head(cic_data)
+
+# Generate data.
+data <- GenTwoSampleData(
+  n1 = 200,
+  n0 = 200,
+  censor_rate1 = 0.25,
+  censor_rate0 = 0.25,
+  event_rate1 = 0.50,
+  event_rate0 = 0.75,
+  death_rate1 = 0.25,
+  death_rate0 = 0.25
+)
+
+# Add strata.
+strata <- rmultinom(n = 400, size = 1, prob = c(0.3, 0.4, 0.3))
+data$strata <- apply(strata, 2, which.max)
+head(data)
 ```
 
-In these data, `arm` is the treatment arm, 0 for reference, 1 for treatment; `time` is the observation time in days; and `status` is the event type, 0 for censoring, 1 for recovery, 2 for death. For analysing other data sets, `arm` should likewise be coded 0/1, and the event with status 1 is assumed to be the event of interest. 
+In these data, `arm` is the treatment arm, 0 for reference, 1 for treatment; `time` is the observation time; and `status` is the event type, 0 for censoring, 1 for an event, 2 for death. For analysing other data sets, `arm` should likewise be coded as 0/1, and status as 0/1/2, with status 1 identifying the event of interest.
 
 ### Compare AUCs
 
-To find a confidence interval and p-vaue for the difference and ratio in areas under the curve at $\tau = 28$ days:
+To find a confidence interval and p-vaue for the difference and ratio in areas under the cumulative incidence curve at time $\tau = 2$:
 ```{R}
 aucs <- CompareCICs(
-  time = cic_data$time,
-  status = cic_data$status,
-  arm = cic_data$arm,
-  sum_stat = 'AUC',
-  param = 28,
+  time = data$time,
+  status = data$status,
+  arm = data$arm,
+  strata = data$strata,
+  sum_stat = "AUC",
+  param = 2,
   reps = 100,
   alpha = 0.05
 )
 show(aucs)
 ```
 
+Replace "AUC" by "AOC" for area over the cumulative incidence curve.
+
 ### Compare Event Rates
 
 To find a confidence interval and p-vaue for the difference and ratio in event rates at $\tau = 28$ days:
 ```{R}
 rates <- CompareCICs(
-  time = cic_data$time,
-  status = cic_data$status,
-  arm = cic_data$arm,
+  time = data$time,
+  status = data$status,
+  arm = data$arm,
+  strata = data$strata,
   sum_stat = 'Rate',
-  param = 28,
+  param = 2,
   reps = 100,
   alpha = 0.05
 )
@@ -77,9 +96,10 @@ show(rates)
 To find a confidence interval and p-vaue for the difference and ratio in medians $q = 0.5$:
 ```{R}
 quants <- CompareCICs(
-  time = cic_data$time,
-  status = cic_data$status,
-  arm = cic_data$arm,
+  time = data$time,
+  status = data$status,
+  arm = data$arm,
+  strata = data$strata,
   sum_stat = 'Quantile',
   param = 0.5,
   reps = 100,

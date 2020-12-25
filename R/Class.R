@@ -2,12 +2,12 @@
 #'
 #' Defines the object class returned by \code{\link{CompareCICs}}. 
 #'
-#' @slot CIs Confidence intervals. 
-#' @slot Curves Cumulative incidence curves. 
-#' @slot Pvals Bootstrap and permutation p-values.
-#' @slot Reps Bootstrap and permutation statistics. 
-#' @slot Stats Observed test statistics. 
-#' @slot Weights Per-stratum weights and statistics. 
+#' @slot cis Confidence intervals. 
+#' @slot cics Cumulative incidence curves. 
+#' @slot pvals Bootstrap and permutation p-values.
+#' @slot reps Bootstrap and permutation statistics. 
+#' @slot marg_stats Observed test statistics. 
+#' @slot stratum_stats Per-stratum weights and statistics. 
 #' 
 #' @name compCICs-class
 #' @rdname compCICs-class
@@ -16,12 +16,12 @@
 setClass(
   Class = "compCICs",
   representation = representation(
-   CIs = "data.frame",
-   Curves = "data.frame",
-   Pvals = "data.frame",
-   Reps = "matrix",
-   Stats = "data.frame",
-   Weights = "data.frame"
+   cis = "data.frame",
+   cics = "data.frame",
+   pvals = "data.frame",
+   reps = "list",
+   marg_stats = "data.frame",
+   stratum_stats = "data.frame"
   )
 )
 
@@ -40,23 +40,23 @@ setClass(
 print.compCICs <- function (x, ...) {
   
   # Stats.
-  cat('Stats:\n')
-  show(x@Stats)
+  cat('Marginal Stats:\n')
+  show(x@marg_stats)
   cat('\n\n')
   
   # CIs.
   cat('CIs:\n')
-  show(x@CIs)
+  show(x@cis)
   cat('\n\n')
   
   # P-values.
   cat('P-values:\n')
-  show(x@Pvals)
+  show(x@pvals)
   cat('\n\n')
   
   # Weights.
-  cat('Weights:\n')
-  show(x@Weights)
+  cat('Stratum Stats:\n')
+  show(x@stratum_stats)
   cat('\n\n')
 
 }

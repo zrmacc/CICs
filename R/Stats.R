@@ -10,8 +10,7 @@
 FindAUC <- function(times, probs, tau) {
   g <- stepfun(
     x = times,
-    y = c(0, probs),
-    right = TRUE
+    y = c(0, probs)
   )
   area <- integrate(f = g, lower = 0, upper = tau, subdivisions = 2e3)
   return(area$value)
@@ -38,7 +37,7 @@ FindAOC <- function(times, probs, tau) {
 #' @importFrom stats stepfun
 
 FindRate <- function(times, probs, tau) {
-  g <- stepfun(x = times, y = c(0, probs), right = TRUE)
+  g <- stepfun(x = times, y = c(0, probs))
   return(g(tau))
 }
 
@@ -51,7 +50,7 @@ FindRate <- function(times, probs, tau) {
 
 FindQuantile <- function(times, probs, q) {
   if (q > max(probs)) {
-    out <- NA
+    out <- Inf
   } else {
     probs <- round(probs, digits = 16)
     idx1 <- (probs >= q)
@@ -68,7 +67,8 @@ FindQuantile <- function(times, probs, q) {
 #' 
 #' Calculate a summary statistic from a cumulative incidence curve. 
 #'
-#' @param data Data.frame containing `time` and `status`.
+#' @param time Observation time.
+#' @param status Status indicator.
 #' @param sum_stat Summary statistic, from among 'AUC', 'Quantile', 'Rate'.
 #' @param param Either the truncation time, if `sum_stat` is 'AUC' or 'Rate', or 
 #'   the quantile probability, if `sum_stat` is 'Quantile'.
@@ -76,15 +76,16 @@ FindQuantile <- function(times, probs, q) {
 #' @export 
 
 FindStat <- function(
-  data,
+  time,
+  status,
   sum_stat,
   param
 ) {
   
   # Construct cumulative incidence curve.
-  tab <- TabulateCIC(time = data$time, status = data$status)
-  times <- tab$Time[tab$Status == 1]
-  probs <- tab$CIC[tab$Status == 1]
+  tab <- CalcCIC(time = time, status = status)
+  times <- tab$time
+  probs <- tab$cic_event
   
   out <- NULL
   if (sum_stat == 'AOC') {
@@ -104,12 +105,12 @@ FindStat <- function(
 
 #' Calculate Difference and Ratio in Summary Stats
 #' 
-#' @param data0 Data.frame containing `time` and `status` for arm 0.
-#' @param data1 Data.frame containing `time` and `status` for arm 1.
+#' @param data Data.frame containing 'time', 'status', 'arm', 'strata'.
 #' @param sum_stat Summary statistic, from among 'AOC', 'AUC', 'Quantile', 'Rate'.
 #' @param param Truncation time, if `sum_stat` is 'AOC', 'AUC', 'Rate';
 #'   the quantile probability, if `sum_stat` is 'Quantile'.
 #' @param return_strata Return per_stratum stats and CICs?
+#' @importFrom dplyr "%>%" group_by inner_join n summarise
 #' @return If `return_per_arm`, list containing:
 #' \itemize{
 #'   \item `contrasts`, difference and ratio of summary statistics. 
@@ -119,82 +120,83 @@ FindStat <- function(
 #' }
 
 SumStats <- function(
-  data0, 
-  data1, 
+  data,
   sum_stat = 'AUC',
   param,
   return_strata = FALSE
 ) {
   
-  # Partition by strata.
-  data1_strata <- split(data1, data1$strata, drop = TRUE)
-  data0_strata <- split(data0, data0$strata, drop = TRUE)
-  
   # Stratum sizes.
-  data1_sizes <- sapply(data1_strata, nrow)
-  data0_sizes <- sapply(data0_strata, nrow)
-  sizes <- data1_sizes + data0_sizes
-  weights <- sizes / sum(sizes)
+  strata <- NULL
+  stratum_sizes <- data %>%
+    dplyr::group_by(strata) %>%
+    dplyr::summarise("n" = n(), .groups = "drop") 
+  stratum_sizes$weight <- stratum_sizes$n / sum(stratum_sizes$n)
   
-  # Stats.
-  stratum_stat <- function(x) {FindStat(data = x, sum_stat = sum_stat, param = param)}
-  data1_stats <- sapply(data1_strata, stratum_stat)
-  data0_stats <- sapply(data0_strata, stratum_stat)
+  # Stratum stats
+  arm <- time <- status <- NULL
+  stratum_stats <- data %>%
+    dplyr::group_by(arm, strata) %>%
+    dplyr::summarise(
+      "n" = n(),
+      "stat" = sum_stat,
+      "est" = FindStat(time, status, sum_stat = sum_stat, param = param),
+      .groups = "drop"
+    ) %>% 
+    dplyr::inner_join(
+      stratum_sizes[, c("strata", "weight")], 
+      by = "strata"
+    )
   
-  # Final stats.
-  stat1 <- sum(data1_stats * weights)
-  stat0 <- sum(data0_stats * weights)
+  # Marginal stats.
+  est <- weight <- NULL
+  marg_stats <- stratum_stats %>%
+    dplyr::group_by(arm) %>%
+    dplyr::summarise(
+      "stat" = sum_stat,
+      "n" = sum(n),
+      "est" = sum(weight * est),
+      .groups = "drop"
+    ) 
   
   # Contrasts.
-  diff <- stat1 - stat0
-  ratio <- stat1 / stat0
-  contrasts <- c('diff' = diff, 'ratio' = ratio)
+  stat1 <- marg_stats$est[marg_stats$arm == 1]
+  stat0 <- marg_stats$est[marg_stats$arm == 0]
+  contrasts <- c(
+    'diff' = stat1 - stat0, 
+    'ratio' = stat1 / stat0 
+  )
   
   # Output.
   if (return_strata) {
     
     # Cumulative incidence curves.
-    stratum_curve <- function(x) {TabulateCIC(time = x$time, status = x$status)}
-    strata_names <- names(data1_sizes)
-    curves1 <- lapply(data1_strata, stratum_curve)
-    curves0 <- lapply(data0_strata, stratum_curve)
-    curves <- lapply(strata_names, function(name) {
-      curve1 <- curves1[[name]]
-      curve1$Arm <- 1
-      curve0 <- curves0[[name]]
-      curve0$Arm <- 0
-      out <- rbind(curve1, curve0)
-      out$Stratum <- name
-      return(out)
-    })
-    curves <- do.call(rbind, curves)
-    
-    # Marginal summary statistics.
-    marg_df <- data.frame(
-      'Arm' = c(0, 1),
-      'N' = c(sum(data0_sizes), sum(data1_sizes)),
-      'Stat' = sum_stat,
-      'Est' = c(stat0, stat1)
-    )
+    curves <- data %>%
+      dplyr::group_by(strata, arm) %>%
+      dplyr::summarise(
+        CalcCIC(time, status),
+        .groups = "drop"
+      ) 
     
     # Per-stratum summary statistics.
-    weights_df <- data.frame(
-      'Stratum' = names(data1_sizes),
-      'Weight' = weights,
-      'Stat' = sum_stat,
-      'N0' = data0_sizes,
-      'Stat0' = data0_stats,
-      'N1' = data1_sizes,
-      'Stat1' = data1_stats
-    )
-    weights_df$Diff <- weights_df$Stat1 - weights_df$Stat0
-    weights_df$Ratio <- weights_df$Stat1 / weights_df$Stat0
+    stat <- est0 <- est1 <- NULL
+    stratum_stats <- stratum_stats %>% 
+      tidyr::pivot_wider(
+        id_cols = c(strata, weight, stat),
+        names_from = arm,
+        values_from = c(n, est),
+        names_sep = ""
+      ) %>%
+      dplyr::mutate(
+        diff = est1 - est0,
+        ratio = est1 / est0
+      )
     
     out <- list(
-      'contrasts' = contrasts,
-      'curves' = curves,
-      'marg' = marg_df,
-      'weights' = weights_df
+      contrasts = contrasts,
+      curves = curves,
+      marg_stats = marg_stats,
+      stratum_stats = stratum_stats
     )
   } else {
     out <- contrasts

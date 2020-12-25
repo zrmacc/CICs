@@ -1,6 +1,6 @@
 Package: CICs
 Title: Inference on Cumulative Incidence Curves
-Version: 0.1.1
+Version: 0.2.0
 Authors@R: 
     person(given = "Zachary",
            family = "McCaw",
@@ -14,7 +14,8 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports:
-	cmprsk,
+	dplyr,
 	methods,
-	stats
+	stats,
+	tidyr
 RoxygenNote: 7.1.1

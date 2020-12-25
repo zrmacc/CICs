@@ -76,7 +76,7 @@ Replace "AUC" by "AOC" for area over the cumulative incidence curve.
 
 ### Compare Event Rates
 
-To find a confidence interval and p-vaue for the difference and ratio in event rates at $\tau = 28$ days:
+For inference on the difference and ratio of event rates at $\tau = 2$:
 ```{R}
 rates <- CompareCICs(
   time = data$time,
@@ -93,7 +93,7 @@ show(rates)
 
 ### Compare Medians
 
-To find a confidence interval and p-vaue for the difference and ratio in medians $q = 0.5$:
+To compare the difference and ratio of medians:
 ```{R}
 quants <- CompareCICs(
   time = data$time,

@@ -46,12 +46,12 @@ head(data)
 
 ```
 ##        time status arm strata
-## 1 1.5342347      0   1      1
-## 2 1.8967266      0   1      2
-## 3 0.2310048      1   1      2
-## 4 1.0370315      0   1      3
-## 5 1.0091773      1   1      2
-## 6 0.3223376      0   1      3
+## 1 0.2343015      1   1      3
+## 2 2.4710715      2   1      3
+## 3 1.4048439      1   1      1
+## 4 0.4910617      0   1      3
+## 5 0.4647632      1   1      1
+## 6 0.2193612      1   1      2
 ```
 
 In these data, `arm` is the treatment arm, 0 for reference, 1 for treatment; `time` is the observation time; and `status` is the event type, 0 for censoring, 1 for an event, 2 for death. For analysing other data sets, `arm` should likewise be coded as 0/1, and status as 0/1/2, with status 1 identifying the event of interest.
@@ -79,29 +79,29 @@ show(aucs)
 ## # A tibble: 2 x 4
 ##     arm stat      n   est
 ##   <dbl> <chr> <int> <dbl>
-## 1     0 AUC     200 0.795
-## 2     1 AUC     200 0.554
+## 1     0 AUC     200 0.833
+## 2     1 AUC     200 0.555
 ## 
 ## 
 ## CIs:
 ##            contrast        est      lower      upper
-## boot_diff     A1-A0 -0.2413093 -0.3842677 -0.1174986
-## boot_ratio    A1/A0  0.6964183  0.5420529  0.8408382
+## boot_diff     A1-A0 -0.2776488 -0.3984006 -0.1596547
+## boot_ratio    A1/A0  0.6667226  0.5294923  0.7933343
 ## 
 ## 
 ## P-values:
 ##   contrast        est     perm_p     boot_p
-## 1    A1-A0 -0.2413093 0.01980198 0.01980198
-## 2    A1/A0  0.6964183 0.01980198 0.01980198
+## 1    A1-A0 -0.2776488 0.01980198 0.01980198
+## 2    A1/A0  0.6667226 0.01980198 0.01980198
 ## 
 ## 
 ## Stratum Stats:
 ## # A tibble: 3 x 9
 ##   strata weight stat     n0    n1  est0  est1    diff ratio
 ##    <int>  <dbl> <chr> <int> <int> <dbl> <dbl>   <dbl> <dbl>
-## 1      1  0.295 AUC      52    66 0.869 0.533 -0.337  0.613
-## 2      2  0.442 AUC      91    86 0.776 0.475 -0.301  0.612
-## 3      3  0.262 AUC      57    48 0.742 0.709 -0.0334 0.955
+## 1      1  0.265 AUC      56    50 0.927 0.457 -0.470  0.493
+## 2      2  0.365 AUC      71    75 0.688 0.650 -0.0374 0.946
+## 3      3  0.37  AUC      73    75 0.909 0.532 -0.377  0.585
 ```
 
 Replace "AUC" by "AOC" for area over the cumulative incidence curve.
@@ -129,29 +129,29 @@ show(rates)
 ## # A tibble: 2 x 4
 ##     arm stat      n   est
 ##   <dbl> <chr> <int> <dbl>
-## 1     0 Rate    200 0.637
-## 2     1 Rate    200 0.428
+## 1     0 Rate    200 0.668
+## 2     1 Rate    200 0.495
 ## 
 ## 
 ## CIs:
 ##            contrast        est      lower      upper
-## boot_diff     A1-A0 -0.2088132 -0.2936807 -0.1178695
-## boot_ratio    A1/A0  0.6721585  0.5598392  0.8010745
+## boot_diff     A1-A0 -0.1729386 -0.2583795 -0.0452592
+## boot_ratio    A1/A0  0.7410808  0.6350871  0.9243429
 ## 
 ## 
 ## P-values:
 ##   contrast        est     perm_p     boot_p
-## 1    A1-A0 -0.2088132 0.01980198 0.01980198
-## 2    A1/A0  0.6721585 0.01980198 0.01980198
+## 1    A1-A0 -0.1729386 0.01980198 0.01980198
+## 2    A1/A0  0.7410808 0.01980198 0.01980198
 ## 
 ## 
 ## Stratum Stats:
 ## # A tibble: 3 x 9
 ##   strata weight stat     n0    n1  est0  est1    diff ratio
 ##    <int>  <dbl> <chr> <int> <int> <dbl> <dbl>   <dbl> <dbl>
-## 1      1  0.295 Rate     52    66 0.703 0.442 -0.260  0.630
-## 2      2  0.442 Rate     91    86 0.616 0.365 -0.250  0.593
-## 3      3  0.262 Rate     57    48 0.599 0.518 -0.0808 0.865
+## 1      1  0.265 Rate     56    50 0.687 0.428 -0.259  0.623
+## 2      2  0.365 Rate     71    75 0.587 0.564 -0.0226 0.961
+## 3      3  0.37  Rate     73    75 0.735 0.475 -0.260  0.647
 ```
 
 ### Compare Medians
@@ -177,27 +177,27 @@ show(quants)
 ## # A tibble: 2 x 4
 ##     arm stat         n   est
 ##   <dbl> <chr>    <int> <dbl>
-## 1     0 Quantile   200  1.24
-## 2     1 Quantile   200  2.17
+## 1     0 Quantile   200  1.18
+## 2     1 Quantile   200  2.48
 ## 
 ## 
 ## CIs:
-##            contrast       est     lower upper
-## boot_diff     A1-A0 0.9271617 0.3817628   Inf
-## boot_ratio    A1/A0 1.7462949 1.2497082   Inf
+##            contrast      est     lower    upper
+## boot_diff     A1-A0 1.305356 0.2967083 1.890002
+## boot_ratio    A1/A0 2.108569 1.1752127 2.680476
 ## 
 ## 
 ## P-values:
-##   contrast       est     perm_p     boot_p
-## 1    A1-A0 0.9271617 0.07920792 0.01980198
-## 2    A1/A0 1.7462949 0.05940594 0.01980198
+##   contrast      est     perm_p     boot_p
+## 1    A1-A0 1.305356 0.02083333 0.03846154
+## 2    A1/A0 2.108569 0.02083333 0.03846154
 ## 
 ## 
 ## Stratum Stats:
 ## # A tibble: 3 x 9
-##   strata weight stat        n0    n1  est0  est1   diff ratio
-##    <int>  <dbl> <chr>    <int> <int> <dbl> <dbl>  <dbl> <dbl>
-## 1      1  0.295 Quantile    52    66 0.952  2.58 1.62    2.71
-## 2      2  0.442 Quantile    91    86 1.34   2.33 0.993   1.74
-## 3      3  0.262 Quantile    57    48 1.40   1.44 0.0336  1.02
+##   strata weight stat        n0    n1  est0  est1  diff ratio
+##    <int>  <dbl> <chr>    <int> <int> <dbl> <dbl> <dbl> <dbl>
+## 1      1  0.265 Quantile    56    50 0.860  3.87 3.01   4.50
+## 2      2  0.365 Quantile    71    75 1.54   1.68 0.140  1.09
+## 3      3  0.37  Quantile    73    75 1.04   2.28 1.23   2.18
 ```

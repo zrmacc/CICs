@@ -11,7 +11,7 @@
 #' @return Numeric p-value.
 
 CalcP <- function(p) {
-  out <- 2 * mean(c(1, p))
+  out <- 2 * mean(c(1, p), na.rm = TRUE)
   out <- min(out, 1)
   return(out)
 }

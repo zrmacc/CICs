@@ -50,7 +50,7 @@ FindRate <- function(times, probs, tau) {
 
 FindQuantile <- function(times, probs, q) {
   if (q > max(probs)) {
-    out <- Inf
+    out <- NA
   } else {
     probs <- round(probs, digits = 16)
     idx1 <- (probs >= q)
@@ -155,7 +155,7 @@ SumStats <- function(
     dplyr::summarise(
       "stat" = sum_stat,
       "n" = sum(n),
-      "est" = sum(weight * est),
+      "est" = sum(weight * est[!is.na(est)]) / sum(weight[!is.na(est)]),
       .groups = "drop"
     ) 
   

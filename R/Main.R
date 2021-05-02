@@ -14,7 +14,6 @@
 #' @param reps Bootstrap replicates.
 #' @param alpha Alpha level.
 #' @importFrom methods new
-#' @import stats
 #' @export
 #' @return Object of class \code{compCICs} containing:
 #' \itemize{

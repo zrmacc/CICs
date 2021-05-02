@@ -13,6 +13,9 @@ FindAUC(times, probs, tau)
 
 \item{tau}{Truncation time.}
 }
+\value{
+Numeric.
+}
 \description{
 Find Area Under the Cumulative Incidence Curve.
 }

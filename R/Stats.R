@@ -6,6 +6,9 @@
 #' @param times CIC times.
 #' @param probs CIC probabilities.
 #' @param tau Truncation time.
+#' @return Numeric.
+#' 
+#' @importFrom stats integrate
 
 FindAUC <- function(times, probs, tau) {
   g <- stepfun(
@@ -37,7 +40,7 @@ FindAOC <- function(times, probs, tau) {
 #' @importFrom stats stepfun
 
 FindRate <- function(times, probs, tau) {
-  g <- stepfun(x = times, y = c(0, probs))
+  g <- stats::stepfun(x = times, y = c(0, probs))
   return(g(tau))
 }
 
@@ -110,7 +113,6 @@ FindStat <- function(
 #' @param param Truncation time, if `sum_stat` is 'AOC', 'AUC', 'Rate';
 #'   the quantile probability, if `sum_stat` is 'Quantile'.
 #' @param return_strata Return per_stratum stats and CICs?
-#' @importFrom dplyr "%>%" group_by inner_join n summarise
 #' @return If `return_per_arm`, list containing:
 #' \itemize{
 #'   \item `contrasts`, difference and ratio of summary statistics. 
@@ -118,6 +120,8 @@ FindStat <- function(
 #'   \item `marg`, marginal summary statistics.
 #'   \item `weights`, per-stratum summary statistics.
 #' }
+#' 
+#' @importFrom dplyr "%>%" group_by inner_join n summarise
 
 SumStats <- function(
   data,
@@ -163,8 +167,8 @@ SumStats <- function(
   stat1 <- marg_stats$est[marg_stats$arm == 1]
   stat0 <- marg_stats$est[marg_stats$arm == 0]
   contrasts <- c(
-    'diff' = stat1 - stat0, 
-    'ratio' = stat1 / stat0 
+    "diff" = stat1 - stat0, 
+    "ratio" = stat1 / stat0 
   )
   
   # Output.

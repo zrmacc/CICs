@@ -5,7 +5,9 @@
 #' @param x Bootstrap replicates.
 #' @param alpha Alpha level.
 #' @return Numeric vector containing the 'alpha' level, the 'lower' and 'upper'
-#'   confidence bounds.
+#'   confidence limits.
+#'   
+#' @importFrom stats quantile
 
 BootCI <- function (x, alpha = 0.05) {
   

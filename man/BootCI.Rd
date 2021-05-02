@@ -13,7 +13,7 @@ BootCI(x, alpha = 0.05)
 }
 \value{
 Numeric vector containing the 'alpha' level, the 'lower' and 'upper'
-  confidence bounds.
+  confidence limits.
 }
 \description{
 Construct Confidence Interval

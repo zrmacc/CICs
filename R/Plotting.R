@@ -383,8 +383,7 @@ PlotCICs <- function(
 #' @return ggplot.
 #' 
 #' @importFrom dplyr "%>%" filter rename
-#' @importFrom ggplot2 aes element_blank geom_ribbon geom_step ggplot ggtitle 
-#'   scale_x_continuous scale_y_continuous scale_fill_manual theme theme_bw
+#' @importFrom ggplot2 aes element_blank
 #' @export
 
 PlotAUCIC <- function(
@@ -485,8 +484,7 @@ PlotAUCIC <- function(
 #' @return ggplot.
 #' 
 #' @importFrom dplyr "%>%" rename mutate
-#' @importFrom ggplot2 aes geom_text ggplot scale_x_continuous 
-#'   scale_y_discrete theme theme_bw 
+#' @importFrom ggplot2 aes element_blank
 #' @importFrom tidyr pivot_longer
 #' @export
 

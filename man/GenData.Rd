@@ -4,21 +4,18 @@
 \alias{GenData}
 \title{Generate Competing Risks Data}
 \usage{
-GenData(n, censor_rate, event_rate, death_rate, tau = NULL)
+GenData(n, event_rate, death_rate, censor_rate = 0, tau = NULL)
 }
 \arguments{
 \item{n}{Sample size.}
-
-\item{censor_rate}{Censoring rate.}
 
 \item{event_rate}{Event rate.}
 
 \item{death_rate}{Death rate.}
 
-\item{tau}{Optional truncation time needed if censoring rate is set to 0.}
-}
-\value{
-Data.frame containing the observation 'time' and event 'status'.
+\item{censor_rate}{Censoring rate.}
+
+\item{tau}{Optional truncation time.}
 }
 \description{
 Assumes exponential cause-specific hazards and independent exponential

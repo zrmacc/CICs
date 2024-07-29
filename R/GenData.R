@@ -4,48 +4,54 @@
 #' censoring.
 #' 
 #' @param n Sample size.
-#' @param censor_rate Censoring rate.
 #' @param event_rate Event rate.
 #' @param death_rate Death rate.
-#' @param tau Optional truncation time needed if censoring rate is set to 0.
-#' @return Data.frame containing the observation 'time' and event 'status'.
-#' @importFrom stats rexp rmultinom
+#' @param censor_rate Censoring rate.
+#' @param tau Optional truncation time.
 #' @export 
-
 GenData <- function(
   n,
-  censor_rate,
   event_rate,
   death_rate,
+  censor_rate = 0,
   tau = NULL
 ) {
-  
-  # Censoring times.
-  if (censor_rate > 0) {
-    censor <- rexp(n = n, rate = censor_rate)
-  } else {
-    if (is.null(tau)) {stop("Tau is required if censoring is absent.")}
-    censor <- rep(tau, n)
-  }
-
   
   # Overall hazard.
   overall_hazard <- event_rate + death_rate
   
   # Arrivals.
-  event_times <- rexp(n = n, rate = overall_hazard)
+  event_times <- stats::rexp(n = n, rate = overall_hazard)
   
   # Event type.
   pi <- c(event_rate, death_rate) / overall_hazard
-  status <- rmultinom(n = n, size = 1, prob = pi)
-  status <- apply(status, 2, which.max)
+  event_status <- stats::rmultinom(n = n, size = 1, prob = pi)
+  event_status <- apply(event_status, 2, which.max)
+  
+  # Censoring.
+  if (censor_rate > 0) {
+    censor <- stats::rexp(n = n, rate = censor_rate)
+    time <- pmin(event_times, censor)
+    status <- (event_times <= censor) * event_status
+  }  else {
+    time <- event_times
+    status <- event_status
+  }
+  
+  # Truncation.
+  if (!is.null(tau)) {
+    tmp_time <- time  
+    time <- pmin(time, tau)
+    status[tmp_time > tau] <- 0
+  }
   
   # Observed data.
   out <- data.frame(
-    time = pmin(event_times, censor),
-    status = (event_times <= censor) * status
+    time = time,
+    status = status
   )
   return(out)
+  
 }
 
 
@@ -68,7 +74,6 @@ GenData <- function(
 #' @return Data.frame with observation 'time', event 'status, and 
 #'   treatment 'arm'.
 #' @export
-
 GenTwoSampleData <- function(
   n1,
   n0,

@@ -1,6 +1,6 @@
 Package: CICs
 Title: Inference on Cumulative Incidence Curves
-Version: 0.2.1
+Version: 0.2.2
 Authors@R: 
     person(given = "Zachary",
            family = "McCaw",
@@ -11,11 +11,17 @@ Description: Provides functions for inference on the difference and ratio in eve
 Depends: R (>= 3.5.0)
 License: GPL-3
 Encoding: UTF-8
-LazyData: true
 Imports:
-	dplyr,
-	ggplot2,
-	methods,
-	stats,
-	tidyr
-RoxygenNote: 7.1.1
+  dplyr,
+  ggplot2,
+  methods,
+  Rcpp,
+  stats,
+  tidyr
+RoxygenNote: 7.2.3
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+LinkingTo: 
+  RcppArmadillo,
+  Rcpp

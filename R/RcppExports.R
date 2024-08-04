@@ -6,23 +6,33 @@
 #' Tabulate the number at risk and the number of events at each unique
 #' observation time.
 #' 
-#' @param time Event time.
 #' @param status Status, coded as 0 for censoring, 1 for an event, 2 for death.
+#' @param time Event time.
 #' @return Data.frame with the censorings, deaths, and events occurring
 #'   at each distinct time point. 
 #' @export
-TabulateEvents <- function(time, status) {
-    .Call('_CICs_TabulateEvents', PACKAGE = 'CICs', time, status)
+TabulateEvents <- function(status, time) {
+    .Call(`_CICs_TabulateEvents`, status, time)
 }
 
 #' Calculate CIC
 #' 
+#' @param status Status, coded as 0 for censoring, 1 for an event, 2 for death.
 #' @param time Observation time.
-#' @param status Event status. The event coded as 1 is assumed to be the event
-#'   of interest.
 #' @return Tabulate cumulative incidence curve. 
 #' @export 
-CalcCIC <- function(time, status) {
-    .Call('_CICs_CalcCIC', PACKAGE = 'CICs', time, status)
+CalcCIC <- function(status, time) {
+    .Call(`_CICs_CalcCIC`, status, time)
+}
+
+#' Influence CIC
+#' 
+#' @param status Status, coded as 0 for censoring, 1 for an event, 2 for death.
+#' @param time Observation time.
+#' @param trunc_time Time at which to evaluate the influence function.
+#' @return Tabulate cumulative incidence curve. 
+#' @export 
+InfluenceCIC <- function(status, time, trunc_time) {
+    .Call(`_CICs_InfluenceCIC`, status, time, trunc_time)
 }
 

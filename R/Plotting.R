@@ -12,11 +12,7 @@
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return stepfun.
-#' 
-#' @importFrom dplyr "%>%" rename
-#' @importFrom stats stepfun
 #' @export
-
 CICurve <- function(
   data,
   status_name = "status",
@@ -31,7 +27,7 @@ CICurve <- function(
     )
   
   # Fit cumulative incidence curve.
-  fit <- CalcCIC(data$time, data$status)
+  fit <- CalcCIC(status = data$status, time = data$time)
   g <- stats::stepfun(x = fit$time, y = c(0, fit$cic_event))
   return(g)
 }
@@ -46,11 +42,7 @@ CICurve <- function(
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return stepfun.
-#' 
-#' @importFrom dplyr "%>%" rename
-#' @importFrom stats stepfun
 #' @export
-
 SECurve <- function(
   data,
   status_name = "status",
@@ -65,7 +57,7 @@ SECurve <- function(
     )
   
   # Fit cumulative incidence curve.
-  fit <- CalcCIC(data$time, data$status)
+  fit <- CalcCIC(status = data$status, time = data$time)
   g <- stats::stepfun(x = fit$time, y = c(0, fit$se_cic_event))
   return(g)
 }
@@ -80,11 +72,7 @@ SECurve <- function(
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return stepfun.
-#' 
-#' @importFrom dplyr "%>%" rename
-#' @importFrom stats stepfun
 #' @export
-
 NARCurve <- function(
   data,
   status_name = "status",
@@ -99,7 +87,7 @@ NARCurve <- function(
     )
   
   # Fit cumulative incidence curve.
-  fit <- CalcCIC(data$time, data$status)
+  fit <- CalcCIC(status = data$status, time = data$time)
   g <- stats::stepfun(x = fit$time, y = c(nrow(df), fit$nar))
   return(g)
 }
@@ -118,9 +106,6 @@ NARCurve <- function(
 #' @param tau Trunction time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
-#' 
-#' @importFrom dplyr "%>%" rename
-
 CICPlotFrame1 <- function(
   data,
   eval_points = 1000,
@@ -164,9 +149,6 @@ CICPlotFrame1 <- function(
 #' @param tau Trunction time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
-#' 
-#' @importFrom dplyr "%>%" filter mutate rename
-
 CICPlotFrame2 <- function(
   data,
   arm_name = "arm",
@@ -217,9 +199,6 @@ CICPlotFrame2 <- function(
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return Data.frame containing `time`, `nar_ctrl`, `nar_trt`.
-#' 
-#' @importFrom dplyr "%>%" filter rename 
-
 NARPlotFrame <- function(
   data, 
   x_breaks, 
@@ -275,12 +254,7 @@ NARPlotFrame <- function(
 #' @param y_name Y-axis name.
 #' @param y_lim Y-axis limits.
 #' @return ggplot.
-#' 
-#' @importFrom dplyr "%>%" rename
-#' @importFrom ggplot2 aes element_blank geom_step ggplot ggtitle 
-#'   scale_x_continuous scale_y_continuous scale_color_manual theme theme_bw
 #' @export
-
 PlotCICs <- function(
   data,
   arm_name = "arm",
@@ -326,13 +300,13 @@ PlotCICs <- function(
   q <- ggplot2::ggplot() +
     ggplot2::theme_bw() + 
     ggplot2::theme(
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
+      panel.grid.major = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank(),
       legend.position = legend_pos
     ) + 
     ggplot2::geom_step(
       data = df, 
-      aes(x = time, y = prob, color = arm), 
+      ggplot2::aes(x = time, y = prob, color = arm), 
       size = 1) + 
     ggplot2::scale_color_manual(
       name = NULL,
@@ -381,11 +355,7 @@ PlotCICs <- function(
 #' @param y_name Y-axis name.
 #' @param y_lim Y-axis limits.
 #' @return ggplot.
-#' 
-#' @importFrom dplyr "%>%" filter rename
-#' @importFrom ggplot2 aes element_blank
 #' @export
-
 PlotAUCIC <- function(
   data,
   arm_label = "Ctrl",
@@ -431,12 +401,12 @@ PlotAUCIC <- function(
   q <- ggplot2::ggplot(data = df) +
     ggplot2::theme_bw() + 
     ggplot2::theme(
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
+      panel.grid.major = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank(),
       legend.position = legend_pos
     ) + 
     ggplot2::geom_ribbon(
-      aes(x = time, ymin = 0, ymax = prob, fill = arm),
+      ggplot2::aes(x = time, ymin = 0, ymax = prob, fill = arm),
       alpha = 0.5
     ) +
     ggplot2::scale_fill_manual(
@@ -445,7 +415,7 @@ PlotAUCIC <- function(
       labels = arm_label
     ) +
     ggplot2::geom_step(
-      aes(x = time, y = prob), 
+      ggplot2::aes(x = time, y = prob), 
       color = color,
       size = 1
     ) + 
@@ -482,12 +452,7 @@ PlotAUCIC <- function(
 #' @param x_name X-axis name.
 #' @param y_labs Y-axis labels.
 #' @return ggplot.
-#' 
-#' @importFrom dplyr "%>%" rename mutate
-#' @importFrom ggplot2 aes element_blank
-#' @importFrom tidyr pivot_longer
 #' @export
-
 PlotNARs <- function(
   data,
   x_breaks,
@@ -534,12 +499,12 @@ PlotNARs <- function(
   q <- ggplot2::ggplot(data = df) +
     ggplot2::theme_bw() + 
     ggplot2::theme(
-      panel.border = element_blank(),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank()
+      panel.border = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank()
     ) +
     ggplot2::geom_text(
-      aes(x = time, y = arm, label = nar)
+      ggplot2::aes(x = time, y = arm, label = nar)
     ) +
     ggplot2::scale_x_continuous(
       breaks = x_breaks,

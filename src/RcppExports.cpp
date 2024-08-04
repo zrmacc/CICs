@@ -12,26 +12,39 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // TabulateEvents
-SEXP TabulateEvents(const arma::colvec time, const arma::colvec status);
-RcppExport SEXP _CICs_TabulateEvents(SEXP timeSEXP, SEXP statusSEXP) {
+SEXP TabulateEvents(const arma::colvec& status, const arma::colvec& time);
+RcppExport SEXP _CICs_TabulateEvents(SEXP statusSEXP, SEXP timeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec >::type time(timeSEXP);
-    Rcpp::traits::input_parameter< const arma::colvec >::type status(statusSEXP);
-    rcpp_result_gen = Rcpp::wrap(TabulateEvents(time, status));
+    Rcpp::traits::input_parameter< const arma::colvec& >::type status(statusSEXP);
+    Rcpp::traits::input_parameter< const arma::colvec& >::type time(timeSEXP);
+    rcpp_result_gen = Rcpp::wrap(TabulateEvents(status, time));
     return rcpp_result_gen;
 END_RCPP
 }
 // CalcCIC
-SEXP CalcCIC(const arma::vec& time, const arma::vec& status);
-RcppExport SEXP _CICs_CalcCIC(SEXP timeSEXP, SEXP statusSEXP) {
+SEXP CalcCIC(const arma::vec& status, const arma::vec& time);
+RcppExport SEXP _CICs_CalcCIC(SEXP statusSEXP, SEXP timeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type time(timeSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type status(statusSEXP);
-    rcpp_result_gen = Rcpp::wrap(CalcCIC(time, status));
+    Rcpp::traits::input_parameter< const arma::vec& >::type time(timeSEXP);
+    rcpp_result_gen = Rcpp::wrap(CalcCIC(status, time));
+    return rcpp_result_gen;
+END_RCPP
+}
+// InfluenceCIC
+SEXP InfluenceCIC(const arma::colvec& status, const arma::colvec& time, const double trunc_time);
+RcppExport SEXP _CICs_InfluenceCIC(SEXP statusSEXP, SEXP timeSEXP, SEXP trunc_timeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::colvec& >::type status(statusSEXP);
+    Rcpp::traits::input_parameter< const arma::colvec& >::type time(timeSEXP);
+    Rcpp::traits::input_parameter< const double >::type trunc_time(trunc_timeSEXP);
+    rcpp_result_gen = Rcpp::wrap(InfluenceCIC(status, time, trunc_time));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -39,6 +52,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_CICs_TabulateEvents", (DL_FUNC) &_CICs_TabulateEvents, 2},
     {"_CICs_CalcCIC", (DL_FUNC) &_CICs_CalcCIC, 2},
+    {"_CICs_InfluenceCIC", (DL_FUNC) &_CICs_InfluenceCIC, 3},
     {NULL, NULL, 0}
 };
 

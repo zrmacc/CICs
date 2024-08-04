@@ -6,13 +6,10 @@
 #' @param alpha Alpha level.
 #' @return Numeric vector containing the 'alpha' level, the 'lower' and 'upper'
 #'   confidence limits.
-#'   
-#' @importFrom stats quantile
-
 BootCI <- function (x, alpha = 0.05) {
   
-  lower <- quantile(x = x, probs = alpha / 2, na.rm = TRUE)
-  upper <- quantile(x = x, probs = 1 - alpha / 2, na.rm = TRUE)
+  lower <- stats::quantile(x = x, probs = alpha / 2, na.rm = TRUE)
+  upper <- stats::quantile(x = x, probs = 1 - alpha / 2, na.rm = TRUE)
   
   # Output.
   out <- c(
@@ -35,7 +32,6 @@ BootCI <- function (x, alpha = 0.05) {
 #' @param reps Simulations replicates.
 #' @return List containing the simulation replicates, and the bootstrap CI
 #'   and p-value.
-
 BootSim <- function(
   data,
   obs_stats,

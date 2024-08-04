@@ -13,7 +13,6 @@
 #'   quantile probability, if `sum_stat` is 'Quantile'.
 #' @param reps Bootstrap replicates.
 #' @param alpha Alpha level.
-#' @importFrom methods new
 #' @export
 #' @return Object of class \code{compCICs} containing:
 #' \itemize{
@@ -24,7 +23,6 @@
 #'   \item `@marg_stats`: Marginal test statistics. 
 #'   \item `@stratum_stats`: Stratum test statistics.
 #' }
-
 CompareCICs <- function(
   time, 
   status, 
@@ -99,7 +97,7 @@ CompareCICs <- function(
   pvals$boot_p <- boot$pval
   
   # Output
-  out <- new(
+  out <- methods::new(
     Class = 'compCICs',
     cis = boot$cis,
     cics = obs$curves,

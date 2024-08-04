@@ -2,7 +2,6 @@
 #'
 #' @param data Data.frame.
 #' @return Bootstrapped data.frame.
-
 BootData <- function(data) {
   n <- nrow(data)
   key <- sample(x = n, size = n, replace = TRUE)
@@ -15,7 +14,6 @@ BootData <- function(data) {
 #' 
 #' @param data Data.frame containing `strata`
 #' @return Data.frame bootstrapped within strata.
-
 StratBoot <- function(data) {
   data_strata <- split(data, data$strata, drop = TRUE)
   boot_strata <- lapply(data_strata, BootData)
@@ -30,7 +28,6 @@ StratBoot <- function(data) {
 #'
 #' @param data Data.frame containing `arm`.
 #' @return Permuted data.frame.
-
 PermData <- function(data) {
   n <- nrow(data)
   data$arm <- data$arm[sample(x = n, size = n, replace = TRUE)]
@@ -42,7 +39,6 @@ PermData <- function(data) {
 #' 
 #' @param data Data.frame containing `strata` and `arm`.
 #' @return Data.frame bootstrapped within strata.
-
 StratPerm <- function(data) {
   data_strata <- split(data, data$strata, drop = TRUE)
   perm_strata <- lapply(data_strata, PermData)

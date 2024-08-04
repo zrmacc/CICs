@@ -4,12 +4,12 @@
 \alias{TabulateEvents}
 \title{Tabulate Events}
 \usage{
-TabulateEvents(time, status)
+TabulateEvents(status, time)
 }
 \arguments{
-\item{time}{Event time.}
-
 \item{status}{Status, coded as 0 for censoring, 1 for an event, 2 for death.}
+
+\item{time}{Event time.}
 }
 \value{
 Data.frame with the censorings, deaths, and events occurring

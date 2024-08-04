@@ -19,10 +19,10 @@ the quantile probability, if `sum_stat` is 'Quantile'.}
 \value{
 If `return_per_arm`, list containing:
 \itemize{
-  \item `contrasts`, difference and ratio of summary statistics. 
-  \item `curves`, list of tabulated cumulative incidence curves.
-  \item `marg`, marginal summary statistics.
-  \item `weights`, per-stratum summary statistics.
+  \item {`contrasts`: difference and ratio of summary statistics.} 
+  \item {`curves`: list of tabulated cumulative incidence curves.}
+  \item {`marg`: marginal summary statistics.}
+  \item {`weights`: per-stratum summary statistics.}
 }
 }
 \description{

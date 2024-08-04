@@ -9,7 +9,6 @@
 #' Calculates p-value from 1-sided rejection indicator.
 #' @param p Vector of 1/0 rejection indicators.
 #' @return Numeric p-value.
-
 CalcP <- function(p) {
   out <- 2 * mean(c(1, p), na.rm = TRUE)
   out <- min(out, 1)
@@ -26,7 +25,6 @@ CalcP <- function(p) {
 #' @param alpha Type I error.
 #' @param reps Simulations replicates.
 #' @return List 
-
 PermSim <- function(
   data,
   obs_stats,

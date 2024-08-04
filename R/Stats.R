@@ -7,15 +7,12 @@
 #' @param probs CIC probabilities.
 #' @param tau Truncation time.
 #' @return Numeric.
-#' 
-#' @importFrom stats integrate
-
 FindAUC <- function(times, probs, tau) {
-  g <- stepfun(
+  g <- stats::stepfun(
     x = times,
     y = c(0, probs)
   )
-  area <- integrate(f = g, lower = 0, upper = tau, subdivisions = 2e3)
+  area <- stats::integrate(f = g, lower = 0, upper = tau, subdivisions = 2e3)
   return(area$value)
 }
 
@@ -25,7 +22,6 @@ FindAUC <- function(times, probs, tau) {
 #' @param times CIC times.
 #' @param probs CIC probabilities.
 #' @param tau Truncation time.
-
 FindAOC <- function(times, probs, tau) {
   area <- tau - FindAUC(times, probs, tau)
   return(area)
@@ -37,8 +33,6 @@ FindAOC <- function(times, probs, tau) {
 #' @param times CIC times.
 #' @param probs CIC probabilities.
 #' @param tau Event time.
-#' @importFrom stats stepfun
-
 FindRate <- function(times, probs, tau) {
   g <- stats::stepfun(x = times, y = c(0, probs))
   return(g(tau))
@@ -50,7 +44,6 @@ FindRate <- function(times, probs, tau) {
 #' @param times CIC times.
 #' @param probs CIC probabilities.
 #' @param q Quantile.
-
 FindQuantile <- function(times, probs, q) {
   if (q > max(probs)) {
     out <- NA
@@ -77,7 +70,6 @@ FindQuantile <- function(times, probs, q) {
 #'   the quantile probability, if `sum_stat` is 'Quantile'.
 #' @return Numeric summary statistic.
 #' @export 
-
 FindStat <- function(
   time,
   status,
@@ -86,7 +78,7 @@ FindStat <- function(
 ) {
   
   # Construct cumulative incidence curve.
-  tab <- CalcCIC(time = time, status = status)
+  tab <- CalcCIC(status = status, time = time)
   times <- tab$time
   probs <- tab$cic_event
   
@@ -115,14 +107,11 @@ FindStat <- function(
 #' @param return_strata Return per_stratum stats and CICs?
 #' @return If `return_per_arm`, list containing:
 #' \itemize{
-#'   \item `contrasts`, difference and ratio of summary statistics. 
-#'   \item `curves`, list of tabulated cumulative incidence curves.
-#'   \item `marg`, marginal summary statistics.
-#'   \item `weights`, per-stratum summary statistics.
+#'   \item {`contrasts`: difference and ratio of summary statistics.} 
+#'   \item {`curves`: list of tabulated cumulative incidence curves.}
+#'   \item {`marg`: marginal summary statistics.}
+#'   \item {`weights`: per-stratum summary statistics.}
 #' }
-#' 
-#' @importFrom dplyr "%>%" group_by inner_join n summarise
-
 SumStats <- function(
   data,
   sum_stat = 'AUC',
@@ -134,7 +123,7 @@ SumStats <- function(
   strata <- NULL
   stratum_sizes <- data %>%
     dplyr::group_by(strata) %>%
-    dplyr::summarise("n" = n(), .groups = "drop") 
+    dplyr::summarise("n" = dplyr::n(), .groups = "drop") 
   stratum_sizes$weight <- stratum_sizes$n / sum(stratum_sizes$n)
   
   # Stratum stats
@@ -142,7 +131,7 @@ SumStats <- function(
   stratum_stats <- data %>%
     dplyr::group_by(arm, strata) %>%
     dplyr::summarise(
-      "n" = n(),
+      "n" = dplyr::n(),
       "stat" = sum_stat,
       "est" = FindStat(time, status, sum_stat = sum_stat, param = param),
       .groups = "drop"
@@ -153,7 +142,7 @@ SumStats <- function(
     )
   
   # Marginal stats.
-  est <- weight <- NULL
+  est <- n <- weight <- NULL
   marg_stats <- stratum_stats %>%
     dplyr::group_by(arm) %>%
     dplyr::summarise(
@@ -178,7 +167,7 @@ SumStats <- function(
     curves <- data %>%
       dplyr::group_by(strata, arm) %>%
       dplyr::summarise(
-        CalcCIC(time, status),
+        CalcCIC(status = status, time = time),
         .groups = "drop"
       ) 
     

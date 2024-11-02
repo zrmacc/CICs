@@ -1,14 +1,14 @@
 ---
-title: "Plotting"
-output: rmarkdown::html_vignette
+title: "Plotting Cumulative Incidence Curves"
+author: "Zachary McCaw"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document
 vignette: >
-  %\VignetteIndexEntry{Plotting}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{Perturbation Bootstrap}
+  %\usepackage[UTF-8]{inputenc}
 ---
-Zachary McCaw <br>
-Updated: 2024-11-01
-
 ## Abstract
 This vigentte illustrates plotting cumulative incidence curves for two or more strata.  
 

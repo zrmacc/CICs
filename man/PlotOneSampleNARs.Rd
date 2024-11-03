@@ -30,7 +30,7 @@ PlotOneSampleNARs(
 
 \item{x_name}{X-axis name.}
 
-\item{y_labs}{Y-axis labels.}
+\item{y_lab}{Y-axis labels.}
 }
 \value{
 ggplot.

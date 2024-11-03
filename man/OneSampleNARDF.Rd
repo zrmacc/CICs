@@ -14,8 +14,6 @@ OneSampleNARDF(data, x_breaks, status_name = "status", time_name = "time")
 \item{status_name}{Name of status column.}
 
 \item{time_name}{Name of time column.}
-
-\item{arm_name}{Name of arm column.}
 }
 \value{
 Data.frame containing `time`, `nar_ctrl`, `nar_trt`.

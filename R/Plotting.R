@@ -203,7 +203,6 @@ TwoSampleCICDF <- function(
 #' 
 #' @param data Data.frame.
 #' @param x_breaks Time points at which to determine the NARs.
-#' @param arm_name Name of arm column.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return Data.frame containing `time`, `nar_ctrl`, `nar_trt`.
@@ -603,7 +602,7 @@ PlotAUCIC <- function(
 #' @param x_labs X-axis labels.
 #' @param x_max X-axis upper limit.
 #' @param x_name X-axis name.
-#' @param y_labs Y-axis labels.
+#' @param y_lab Y-axis labels.
 #' @return ggplot.
 #' @export
 PlotOneSampleNARs <- function(
@@ -630,6 +629,7 @@ PlotOneSampleNARs <- function(
   )
   
   # Plotting.
+  arm <- NULL
   nar <- NULL
   time <- NULL
   q <- ggplot2::ggplot(data = df) +

@@ -10,7 +10,7 @@ vignette: >
   %\usepackage[UTF-8]{inputenc}
 ---
 ## Abstract
-This vigentte illustrates plotting cumulative incidence curves for two or more strata.  
+This vignette illustrates plotting cumulative incidence for one or more strata. 
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(

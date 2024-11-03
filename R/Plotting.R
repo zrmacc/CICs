@@ -1,6 +1,8 @@
 # Purpose: Plot the cumulative incidence curves comparing two treatment arms.
-# Updated: 2021-05-02
+# Updated: 2024-11-02
 
+# -----------------------------------------------------------------------------
+# CIC-related step functions.
 # -----------------------------------------------------------------------------
 
 #' Cumulative Incidence Curve.
@@ -94,10 +96,12 @@ NARCurve <- function(
 
 
 # -----------------------------------------------------------------------------
+# CIC plotting frames.
+# -----------------------------------------------------------------------------
 
-#' Cumulative Incidence Curve Plotting Frame
+#' One-Sample Cumulative Incidence Curve Plotting Frame
 #' 
-#' Construct a data.frame containing the cumulative incidence of the 
+#' Construct a data frame containing the cumulative incidence of the 
 #' status == 1 event across time for a single treatment arm.
 #' 
 #' @param data Data.frame.
@@ -106,7 +110,7 @@ NARCurve <- function(
 #' @param tau Trunction time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
-CICPlotFrame1 <- function(
+OneSampleCICDF <- function(
   data,
   eval_points = 1000,
   status_name = "status", 
@@ -137,7 +141,7 @@ CICPlotFrame1 <- function(
 }
 
 
-#' Cumulative Incidence Curve Plotting Frame
+#' Two-Sample Cumulative Incidence Curve Plotting Frame
 #' 
 #' Construct a data.frame containing the cumulative incidence of the 
 #' status == 1 event across time for a single treatment arm.
@@ -149,7 +153,7 @@ CICPlotFrame1 <- function(
 #' @param tau Trunction time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
-CICPlotFrame2 <- function(
+TwoSampleCICDF <- function(
   data,
   arm_name = "arm",
   eval_points = 1000,
@@ -175,12 +179,12 @@ CICPlotFrame2 <- function(
   arm <- NULL
   df0 <- data %>% 
     dplyr::filter(arm == 0) %>%
-    CICPlotFrame1(tau = tau) %>%
+    OneSampleCICDF(tau = tau) %>%
     dplyr::mutate(arm = 0)
   
   df1 <- data %>% 
     dplyr::filter(arm == 1) %>%
-    CICPlotFrame1(tau = tau) %>%
+    OneSampleCICDF(tau = tau) %>%
     dplyr::mutate(arm = 1)
   
   out <- rbind(df0, df1)
@@ -189,9 +193,13 @@ CICPlotFrame2 <- function(
 }
 
 
-#' Number at Risk Plotting Frame
+# -----------------------------------------------------------------------------
+# NAR plotting frames
+# -----------------------------------------------------------------------------
+
+#' One-Sample Number at Risk Plotting Frame
 #' 
-#' Numbers at risk for competing risks data.
+#' One-sample numbers at risk for competing risks data.
 #' 
 #' @param data Data.frame.
 #' @param x_breaks Time points at which to determine the NARs.
@@ -199,7 +207,43 @@ CICPlotFrame2 <- function(
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return Data.frame containing `time`, `nar_ctrl`, `nar_trt`.
-NARPlotFrame <- function(
+OneSampleNARDF <- function(
+    data, 
+    x_breaks, 
+    status_name = "status",
+    time_name = "time"
+) {
+  
+  # Prepare data.
+  df <- data %>%
+    dplyr::rename(
+      status = {{status_name}},
+      time = {{time_name}}
+    )
+  
+  # NAR functions.
+  g <- df %>% NARCurve()
+  
+  # Output.
+  out <- data.frame(
+    time = x_breaks,
+    nar = g(x_breaks)
+  )
+  return(out)
+}
+
+
+#' Two-Sample Number at Risk Plotting Frame
+#' 
+#' Two-sample numbers at risk for competing risks data.
+#' 
+#' @param data Data.frame.
+#' @param x_breaks Time points at which to determine the NARs.
+#' @param arm_name Name of arm column.
+#' @param status_name Name of status column.
+#' @param time_name Name of time column.
+#' @return Data.frame containing `time`, `nar_ctrl`, `nar_trt`.
+TwoSampleNARDF <- function(
   data, 
   x_breaks, 
   arm_name = "arm",
@@ -229,11 +273,127 @@ NARPlotFrame <- function(
   return(out)
 }
 
+
 # -----------------------------------------------------------------------------
-# Plot cumulative incidence curve.
+# Logic for X-axis.
 # -----------------------------------------------------------------------------
 
-#' Plot Cumulative Incidence Curves
+#' X-Axis Logic
+#' @param data Data.frame.
+#' @param tau Truncation time.
+#' @param x_breaks X-axis breaks.
+#' @param x_max X-axis upper limit, may differ from tau.
+#' @return List of options.
+#' @noRd
+XAxis <- function(data, tau, x_breaks, x_max) {
+  
+  # Upper limit.
+  if (is.null(x_breaks) & is.null(x_max)) {
+    x_max <- max(data$time)
+  } else if (!is.null(x_breaks) & is.null(x_max)) {
+    x_max <- max(x_breaks)
+  }
+  
+  # Truncation time.
+  if (is.null(tau)) {
+    tau <- x_max
+  } else {
+    x_max <- tau
+  }
+  
+  out <- list(
+    tau = tau,
+    x_max = x_max
+  )
+  return(out)
+}
+
+
+# -----------------------------------------------------------------------------
+# Main CIC plotting functions.
+# -----------------------------------------------------------------------------
+
+#' Plot One-Sample Cumulative Incidence Curve
+#' 
+#' Plot the cumulative incidence curve for a single treatment arm.
+#'
+#' @param data Data.frame.
+#' @param color Line color.
+#' @param tau Truncation time.
+#' @param status_name Name of status column.
+#' @param time_name Name of time column.
+#' @param title Plot title.
+#' @param x_breaks X-axis breaks.
+#' @param x_labs X-axis labels.
+#' @param x_name X-axis name.
+#' @param x_max X-axis upper limit, may differ from tau.
+#' @param y_name Y-axis name.
+#' @param y_lim Y-axis limits.
+#' @return ggplot.
+#' @export
+PlotOneSampleCIC <- function(
+  data,
+  color = "#C65842",
+  status_name = "status",
+  tau = NULL,
+  time_name = "time",
+  title = NULL,
+  x_breaks = NULL,
+  x_labs = NULL,
+  x_name = "Time",
+  x_max = NULL,
+  y_name = "Cumulative Incidence",
+  y_lim = c(0, 1)
+) {
+  
+  # Prepare data.
+  data <- data %>%
+    dplyr::rename(
+      status = {{status_name}},
+      time = {{time_name}}
+    )
+  
+  # Set X-axis defaults.
+  xaxis <- XAxis(data, tau = tau, x_breaks = x_breaks, x_max = x_max)
+  
+  # Plotting frame.
+  df <- data %>% OneSampleCICDF(tau = xaxis$tau)
+  
+  # Plotting.
+  prob <- NULL
+  time <- NULL
+  q <- ggplot2::ggplot() +
+    ggplot2::theme_bw() + 
+    ggplot2::theme(
+      panel.grid.major = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank()
+    ) + 
+    ggplot2::geom_step(
+      data = df, 
+      ggplot2::aes(x = time, y = prob), 
+      linewidth = 1,
+      color = color
+    ) + 
+    ggplot2::scale_x_continuous(
+      name = x_name,
+      breaks = x_breaks,
+      labels = x_labs,
+      limits = c(0, xaxis$x_max)
+    ) +
+    ggplot2::scale_y_continuous(
+      name = y_name,
+      limits = y_lim
+    ) + 
+    ggplot2::ggtitle(
+      label = title
+    )
+  
+  # Output.
+  return(q)
+}
+
+
+#' Plot Two-Sample Cumulative Incidence Curves
 #' 
 #' Plot the cumulative incidence curves comparing two treatment arms.
 #'
@@ -282,16 +442,11 @@ PlotCICs <- function(
       time = {{time_name}}
     )
   
-  # Set defaults.
-  if (is.null(x_max)) {
-    x_max <- max(data$time)
-  }
-  if (is.null(tau)) {
-    tau <- x_max
-  }
+  # Set X-axis defaults.
+  xaxis <- XAxis(data, tau = tau, x_breaks = x_breaks, x_max = x_max)
   
   # Plotting frame.
-  df <- data %>% CICPlotFrame2(tau = tau)
+  df <- data %>% TwoSampleCICDF(tau = xaxis$tau)
   
   # Plotting.
   arm <- NULL
@@ -317,7 +472,7 @@ PlotCICs <- function(
       name = x_name,
       breaks = x_breaks,
       labels = x_labs,
-      limits = c(0, x_max)
+      limits = c(0, xaxis$x_max)
     ) +
     ggplot2::scale_y_continuous(
       name = y_name,
@@ -332,6 +487,8 @@ PlotCICs <- function(
 }
 
 
+# -----------------------------------------------------------------------------
+# Plot area under the CIC.
 # -----------------------------------------------------------------------------
 
 #' Plot AUCIC.
@@ -384,16 +541,11 @@ PlotAUCIC <- function(
       time = {{time_name}}
     ) %>%
     dplyr::filter(arm == which_arm) %>%
-    CICPlotFrame1() %>%
+    PlotOneSampleCIC() %>%
     dplyr::mutate(arm = factor(which_arm))
   
-  # Set defaults.
-  if (is.null(x_max)) {
-    x_max <- max(data$time)
-  }
-  if (is.null(tau)) {
-    tau <- x_max
-  }
+  # Set X-axis defaults.
+  xaxis <- XAxis(data, tau = tau, x_breaks = x_breaks, x_max = x_max)
 
   # Plotting.
   prob <- NULL
@@ -423,7 +575,7 @@ PlotAUCIC <- function(
       name = x_name,
       breaks = x_breaks,
       labels = x_labs,
-      limits = c(0, x_max)
+      limits = c(0, xaxis$x_max)
     ) +
     ggplot2::scale_y_continuous(
       name = y_name,
@@ -439,8 +591,71 @@ PlotAUCIC <- function(
 
 
 # -----------------------------------------------------------------------------
+# Plot numbers at risk.
+# -----------------------------------------------------------------------------
 
-#' Plot Numbers at Risk
+#' Plot One-Sample Numbers at Risk
+#' 
+#' @param data Data.frame.
+#' @param x_breaks X-axis breaks.
+#' @param status_name Name of status column.
+#' @param time_name Name of time column.
+#' @param x_labs X-axis labels.
+#' @param x_max X-axis upper limit.
+#' @param x_name X-axis name.
+#' @param y_labs Y-axis labels.
+#' @return ggplot.
+#' @export
+PlotOneSampleNARs <- function(
+    data,
+    x_breaks,
+    status_name = "status",
+    time_name = "time",
+    x_labs = NULL,
+    x_max = NULL,
+    x_name = NULL,
+    y_lab = "NAR"
+) {
+  
+  # Set X-axis defaults.
+  xaxis <- XAxis(data, tau = NULL, x_breaks = x_breaks, x_max = x_max)
+  
+  # Data prep.
+  df <- data %>% OneSampleNARDF(x_breaks = x_breaks) 
+  df$arm <- 0
+  df$arm <- factor(
+    x = df$arm,
+    levels = 0,
+    labels = y_lab
+  )
+  
+  # Plotting.
+  nar <- NULL
+  time <- NULL
+  q <- ggplot2::ggplot(data = df) +
+    ggplot2::theme_bw() + 
+    ggplot2::theme(
+      panel.border = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank()
+    ) +
+    ggplot2::geom_text(
+      ggplot2::aes(x = time, y = arm, label = nar)
+    ) +
+    ggplot2::scale_x_continuous(
+      breaks = x_breaks,
+      name = x_name,
+      labels = x_labs,
+      limits = c(0, xaxis$x_max)
+    ) + 
+    ggplot2::scale_y_discrete(
+      name = NULL
+    )
+  return(q)
+}
+
+
+#' Plot Two-Sample Numbers at Risk
 #' 
 #' @param data Data.frame.
 #' @param x_breaks X-axis breaks.
@@ -465,13 +680,8 @@ PlotNARs <- function(
   y_labs = c("Ctrl", "Trt")
 ) {
   
-  # Defaults.
-  if (is.null(x_labs)) {
-    x_labs = x_breaks
-  }
-  if (is.null(x_max)) {
-    x_max = max(x_breaks)
-  }
+  # Set X-axis defaults.
+  xaxis <- XAxis(data, tau = NULL, x_breaks = x_breaks, x_max = x_max)
   
   # Data prep.
   nar_ctrl <- NULL
@@ -482,7 +692,7 @@ PlotNARs <- function(
       status = {{status_name}},
       time = {{time_name}}
     ) %>%
-    NARPlotFrame(x_breaks) %>%
+    TwoSampleNARDF(x_breaks) %>%
     tidyr::pivot_longer(
       cols = c(nar_ctrl, nar_trt),
       names_to = "arm",
@@ -510,7 +720,7 @@ PlotNARs <- function(
       breaks = x_breaks,
       name = x_name,
       labels = x_labs,
-      limits = c(0, x_max)
+      limits = c(0, xaxis$x_max)
     ) + 
     ggplot2::scale_y_discrete(
       name = NULL,

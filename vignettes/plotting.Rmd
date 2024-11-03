@@ -29,9 +29,65 @@ suppressPackageStartupMessages({
 
 ## Cumulative incidence of the event of interest
 
+Built-in functions are available for plotting the cumulative incidence curves (CICs) of the event of interest for 1 or 2 treatment arms.
+
+### One-sample setting
+
+Case of a single group or treatment arm.
+
+### Simulate data
+
+```{r, cache=TRUE}
+set.seed(100)
+n <- 1e2
+
+# Single arm.
+data <- CICs::GenData(
+  n = n,
+  event_rate = 1.0,
+  death_rate = 0.25,
+  censor_rate = 0.25,
+  tau = 4
+)
+```
+
+### Plotting
+
+```{r, fig.align="center", fig.width=7.0, fig.height=4.0, cache=TRUE}
+# Set the time points at which to calculate NARs. 
+# Pass these to both PlotCICs and PlotNARs for consistent labeling.
+x_breaks <- seq(from = 0, to = 4, by = 0.5)
+x_labs <- sprintf("%.1f", x_breaks)
+
+# Plot the cumulative incidence curves.
+q_cic <- CICs::PlotOneSampleCIC(
+  data = data,
+  x_breaks = x_breaks,
+  x_labs = x_labs
+)
+
+# Plot the numbers at risk.
+q_nar <- CICs::PlotOneSampleNARs(
+  data = data,
+  x_breaks = x_breaks,
+  x_labs = x_labs
+)
+
+# Final plot.
+q <- cowplot::plot_grid(
+  plotlist = list(q_cic, q_nar),
+  align = "v",
+  axis = "l",
+  ncol = 1,
+  rel_heights = c(3, 1)
+)
+show(q)
+```
+
+
 ### Two-sample setting
 
-Built-in functions are available for the specific setting of comparing the cumulative incidence of the event of interest between two treatment arms.
+Case of two treatment arms.
 
 #### Simulate data
 Data are simulated for two treatment arms, a reference arm (`arm == 0`) and a treatment arm (`arm == 1`). Note that the plotting functions assume the arms are labeled 0 and 1. 

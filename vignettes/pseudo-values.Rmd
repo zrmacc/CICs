@@ -1,0 +1,129 @@
+---
+title: "Cumulative Incidence Curve Regression"
+author: "Zachary McCaw"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document
+vignette: >
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{Perturbation Bootstrap}
+  %\usepackage[UTF-8]{inputenc}
+---
+
+## Purpose
+This vignette illustrates performing regression of cumulative incidence probabilities via pseudo-values. 
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  cache = TRUE
+)
+```
+
+```{r setup}
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(ggplot2)
+  library(SurvUtils)
+})
+```
+
+## Pseudo-value regression
+
+### Simulate data
+
+Time to the event of interest is simulated from an exponential distribution with rate parameter:
+
+$$ \lambda(A, X_{1}, X_{2}) = \lambda_{0}\exp(A\beta_{A} + X_{1}\beta_{1} + X_{2}\beta_{2}) $$
+Here $\lambda_{0}$ is the base event rate, $A \in \{0, 1\}$ is the treatment arm, and $(X_{1}, X_{2})$ are covariates. The coefficients are set such that treatment $A = 1$ *decreases* the event rate by 50\%, a one standard deviation increase in $X_{1}$ *increases* the event rate by 20\%, and $X_{2}$ has no effect. Time to the event of interest is subject to a competing risk from death, with rate $\lambda_{D} = 0.25$, and independent censoring, with rate $\lambda_{C} = 0.25$.
+
+```{r}
+set.seed(101)
+# Generate covariate frame.
+n <- 2 * 1e3
+df_x <- data.frame(
+  arm = rep(c(0, 1), each = 1e3),
+  x1 = stats::rnorm(n),
+  x2 = stats::rnorm(n)
+)
+
+# Center the scale the covariates.
+df_x$x1 <- scale(df_x$x1)
+df_x$x2 <- scale(df_x$x2)
+
+# Simulate data.
+df <- SurvUtils::GenCRData(
+  base_death_rate = 0.25,
+  base_event_rate = 1.0,
+  beta_event = c(log(0.5), log(1.2), 0),
+  censoring = 0.25,
+  covariates = data.matrix(df_x)
+)
+df <- cbind(df, df_x)
+
+# Tabulate censorings, events, and deaths by treatment arm.
+df %>%
+  dplyr::group_by(arm) %>%
+  dplyr::summarise(
+    n = dplyr::n(),
+    n_censor = sum(status == 0),
+    n_event = sum(status == 1),
+    n_death = sum(status == 2)
+  )
+```
+
+### Pseudo-values regression
+
+Pseudo-values at a specified time point $\tau$ are generated with the `SurvUtils::GenPseudo` function. The pseudo-value is defined as:
+$$ \hat{\theta}_{i}(\tau) = n \cdot \hat{\theta}(\tau) - (n - 1)\cdot\hat{\theta}_{(-i)}(\tau)$$
+where $\hat{\theta}_{i}(\tau)$ is the pseudo-value for subject $i$ at time $\tau$, $n$ is the sample size, $\hat{\theta}(\tau)$ is the value of the cumulative incidence curve (CIC) at time $\tau$ based on the full sample, and $\hat{\theta}_{(-i)}(\tau)$ is the CIC at time $\tau$ based on the jackknifed sample with subject $i$ excluded. Pseudo-values take censoring into account during their construction, and once calculated, can be modeled in the same way as any continuous outcome. 
+
+Below, pseudo-values for the CIC at time $\tau = 2$ are modeled via linear regression. Consequently, the coefficients are interpreted as risk differences. For example, the coefficient on `arm` indicates that the treatment ($A = 1$) is estimated to reduce the cumulative incidence of the event of interest at time $\tau = 2$ by 17.9\%, holding $(X_{1}, X_{2})$ constant. Meanwhile, a standard deviation increase in $X_{1}$ is associated with a 6.7\% increase in the cumulative incidence of the event of interest at time $\tau = 2$, holding $(A, X_{2})$ constant. As expected, $A$ is associated with a significant reduction in the cumulative incidence, $X_{1}$ is associated with a comparatively smaller but significant increase, and $X_{2}$ has no significant effect. 
+
+```{r}
+# Generate pseudo-values for the cumulative incidence.
+df <- SurvUtils::GenPseudo(df, tau = 2, type = "cic")
+
+# Fit a linear pseudo-value regression.
+fit <- stats::lm(pseudo ~ arm + x1 + x2, data = df)
+summary(fit)
+```
+
+### Ground truth
+
+The generative model was specified in terms of multiplicative effects of the treatment and covariates on the rate parameter for the event of interest, whereas our analysis estimates rate differences at a particular time point. Since the generative model for the data is known, we can determine the ground truth values for the rate differences by simulating a large data set in the absence of censoring, then fitting the pseudo-value regression at the same time point, as demonstrated below. Uncertainty in the ground truth parameter estimates can be made arbitrarily small by making the sample size sufficiently large. 
+
+```{r}
+set.seed(101)
+# Generate covariate frame.
+n <- 2 * 1e4
+df_x <- data.frame(
+  arm = rep(c(0, 1), each = 1e4),
+  x1 = stats::rnorm(n),
+  x2 = stats::rnorm(n)
+)
+
+# Center the scale the covariates.
+df_x$x1 <- scale(df_x$x1)
+df_x$x2 <- scale(df_x$x2)
+
+# Simulate data.
+df <- SurvUtils::GenCRData(
+  base_death_rate = 0.25,
+  base_event_rate = 1.0,
+  beta_event = c(log(0.5), log(1.2), 0),
+  censoring = 0.0,
+  covariates = data.matrix(df_x)
+)
+df <- cbind(df, df_x)
+
+# Generate pseudo-values for the cumulative incidence.
+df <- SurvUtils::GenPseudo(df, tau = 2, type = "cic")
+
+# Fit a linear pseudo-value regression.
+fit <- stats::lm(pseudo ~ arm + x1 + x2, data = df)
+summary(fit)
+
+```
+

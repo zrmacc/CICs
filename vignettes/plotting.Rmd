@@ -9,8 +9,8 @@ vignette: >
   %\VignetteIndexEntry{Perturbation Bootstrap}
   %\usepackage[UTF-8]{inputenc}
 ---
-## Abstract
-This vignette illustrates plotting cumulative incidence for one or more strata. 
+## Purpose
+This vignette illustrates plotting cumulative incidence curves for one or more strata. 
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(

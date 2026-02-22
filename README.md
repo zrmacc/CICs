@@ -1,12 +1,3 @@
----
-title: "README"
-author: "Zachary McCaw"
-date: "2026-02-22"
-output: 
-  html_document: 
-    keep_md: TRUE
---- 
-
 # Inference for Cumulative Incidence Curves
 
 [![R-CMD-check](https://github.com/zrmacc/CICs/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/zrmacc/CICs/actions/workflows/R-CMD-check.yaml)

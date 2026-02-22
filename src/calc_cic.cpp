@@ -428,7 +428,10 @@ SEXP InfluenceCIC(
   // Cumulative incidence at truncation time.
   double ft = arma::as_scalar(tab.cic_event.elem(arma::find(eval_times == trunc_time)));
 
-  // Calculate influence function.
+  // Influence function (Proposition 1.3.7): psi_i = contribution of subject i to sqrt(n)(F̂1(t)-F1(t)).
+  // psi_i = sqrt(n) * ( -F1(t)*sum(dM_i/Y) + sum(F1(u)*dM_i/Y) + sum(S(u)*dM1_i/Y) ).
+  // Then (1/n)*sum(psi_i^2) estimates asymptotic variance sigma^2 = n*var(F̂1).
+  const double sqrt_n = std::sqrt(static_cast<double>(n));
   arma::colvec dMi;
   arma::colvec dM1i;
   arma::colvec influence = arma::zeros(n);
@@ -437,16 +440,11 @@ SEXP InfluenceCIC(
     dMi = arma::trans(dM.row(i));
     dM1i = arma::trans(dM1.row(i));
 
-    // Term 1.
-    double t1 = -ft * n * arma::accu(dMi / tab.nar);
+    double t1 = -ft * arma::accu(dMi / tab.nar);
+    double t2 = arma::accu(tab.cic_event % dMi / tab.nar);
+    double t3 = arma::accu(tab.surv_init % dM1i / tab.nar);
 
-    // Term 2.
-    double t2 = n * arma::accu(tab.cic_event % dMi / tab.nar);
-
-    // Term 3.
-    double t3 = n * arma::accu(tab.surv_init % dM1i / tab.nar);
-
-    influence(i) = t1 + t2 + t3;
+    influence(i) = sqrt_n * (t1 + t2 + t3);
   }
 
   return Rcpp::wrap(influence);

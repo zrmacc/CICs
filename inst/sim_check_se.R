@@ -37,13 +37,13 @@ GetAsympVar <- function(cic, tau) {
 
 
 #' Get Influence Function Variance
+#' With sqrt(n) scaling, psi_i has E[psi_i^2] -> var(F̂1), so mean(psi_i^2) estimates var(F̂1).
 #' @param data Data.
 #' @param tau Evaluation Time.
 GetIFVar <- function(data, tau) {
-  n <- nrow(data)
   time <- max(data$time[data$time < tau])
   inf <- InfluenceCIC(status = data$status, time = data$time, trunc_time = time)
-  return(mean(inf^2) / n)
+  return(mean(inf^2))
 }
 
 

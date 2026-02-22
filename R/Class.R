@@ -29,7 +29,7 @@ setClass(
 # Print Method
 # -----------------------------------------------------------------------------
 
-#' Print Method for Compre CICs Object.
+#' Print Method for Compare CICs Object.
 #'
 #' Print method for objects of class \code{compCICs}.
 #'

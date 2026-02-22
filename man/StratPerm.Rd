@@ -10,7 +10,7 @@ StratPerm(data)
 \item{data}{Data.frame containing `strata` and `arm`.}
 }
 \value{
-Data.frame bootstrapped within strata.
+Data.frame with arm permuted within strata.
 }
 \description{
 Stratified Permutation

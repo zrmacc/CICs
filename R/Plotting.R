@@ -5,93 +5,54 @@
 # CIC-related step functions.
 # -----------------------------------------------------------------------------
 
+# Internal: build stepfun from data and a function that takes (fit, n) and returns y for stepfun.
+.cic_stepfun <- function(data, status_name, time_name, y_values) {
+  df <- data %>%
+    dplyr::rename(status = dplyr::all_of(status_name), time = dplyr::all_of(time_name))
+  fit <- CalcCIC(status = df$status, time = df$time)
+  stats::stepfun(x = fit$time, y = y_values(fit, nrow(df)))
+}
+
 #' Cumulative Incidence Curve.
-#' 
+#'
 #' Return a function that calculates the event probability for a single
 #' treatment arm. Assumes status == 1 is the event of interest.
-#' 
+#'
 #' @param data Data.frame.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return stepfun.
 #' @export
-CICurve <- function(
-  data,
-  status_name = "status",
-  time_name = "time"
-) {
-  
-  # Prepare data.
-  df <- data %>%
-    dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
-    )
-  
-  # Fit cumulative incidence curve.
-  fit <- CalcCIC(status = data$status, time = data$time)
-  g <- stats::stepfun(x = fit$time, y = c(0, fit$cic_event))
-  return(g)
+CICurve <- function(data, status_name = "status", time_name = "time") {
+  .cic_stepfun(data, status_name, time_name, function(fit, n) c(0, fit$cic_event))
 }
-
 
 #' Standard Error of Cumulative Incidence Curve.
-#' 
+#'
 #' Return a function that calculates the standard error of the event probability
 #' for a single treatment arm. Assumes status == 1 is the event of interest.
-#' 
+#'
 #' @param data Data.frame.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return stepfun.
 #' @export
-SECurve <- function(
-  data,
-  status_name = "status",
-  time_name = "time"
-) {
-  
-  # Prepare data.
-  df <- data %>%
-    dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
-    )
-  
-  # Fit cumulative incidence curve.
-  fit <- CalcCIC(status = data$status, time = data$time)
-  g <- stats::stepfun(x = fit$time, y = c(0, fit$se_cic_event))
-  return(g)
+SECurve <- function(data, status_name = "status", time_name = "time") {
+  .cic_stepfun(data, status_name, time_name, function(fit, n) c(0, fit$se_cic_event))
 }
 
-
 #' Number at Risk Curve
-#' 
+#'
 #' Return a function that calculates the number at risk for a single
 #' treatment arm.
-#' 
+#'
 #' @param data Data.frame.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return stepfun.
 #' @export
-NARCurve <- function(
-  data,
-  status_name = "status",
-  time_name = "time"
-) {
-  
-  # Prepare data.
-  df <- data %>%
-    dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
-    )
-  
-  # Fit cumulative incidence curve.
-  fit <- CalcCIC(status = data$status, time = data$time)
-  g <- stats::stepfun(x = fit$time, y = c(nrow(df), fit$nar))
-  return(g)
+NARCurve <- function(data, status_name = "status", time_name = "time") {
+  .cic_stepfun(data, status_name, time_name, function(fit, n) c(n, fit$nar))
 }
 
 
@@ -107,7 +68,7 @@ NARCurve <- function(
 #' @param data Data.frame.
 #' @param eval_points Number of points at which to evaluate the curve.
 #' @param status_name Name of status column.
-#' @param tau Trunction time.
+#' @param tau Truncation time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
 OneSampleCICDF <- function(
@@ -121,8 +82,8 @@ OneSampleCICDF <- function(
   # Prepare data.
   data <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Truncation time.
@@ -150,7 +111,7 @@ OneSampleCICDF <- function(
 #' @param arm_name Name of arm column.
 #' @param eval_points Number of points at which to evaluate the curve.
 #' @param status_name Name of status column.
-#' @param tau Trunction time.
+#' @param tau Truncation time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
 TwoSampleCICDF <- function(
@@ -165,9 +126,9 @@ TwoSampleCICDF <- function(
   # Prepare data.
   data <- data %>%
     dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+      arm = dplyr::all_of(arm_name),
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Truncation time.
@@ -216,8 +177,8 @@ OneSampleNARDF <- function(
   # Prepare data.
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # NAR functions.
@@ -253,9 +214,9 @@ TwoSampleNARDF <- function(
   # Prepare data.
   df <- data %>%
     dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+      arm = dplyr::all_of(arm_name),
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # NAR functions.
@@ -348,8 +309,8 @@ PlotOneSampleCIC <- function(
   # Prepare data.
   data <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Set X-axis defaults.
@@ -436,9 +397,9 @@ PlotCICs <- function(
   # Prepare data.
   data <- data %>%
     dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+      arm = dplyr::all_of(arm_name),
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Set X-axis defaults.
@@ -461,7 +422,7 @@ PlotCICs <- function(
     ggplot2::geom_step(
       data = df, 
       ggplot2::aes(x = time, y = prob, color = arm), 
-      size = 1) + 
+      linewidth = 1) + 
     ggplot2::scale_color_manual(
       name = NULL,
       values = c(ctrl_color, trt_color),
@@ -533,18 +494,20 @@ PlotAUCIC <- function(
   
   # Prepare data.
   arm <- NULL
-  df <- data %>%
+  data_arm <- data %>%
     dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+      arm = dplyr::all_of(arm_name),
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     ) %>%
-    dplyr::filter(arm == which_arm) %>%
-    PlotOneSampleCIC() %>%
-    dplyr::mutate(arm = factor(which_arm))
+    dplyr::filter(arm == which_arm)
   
   # Set X-axis defaults.
   xaxis <- XAxis(data, tau = tau, x_breaks = x_breaks, x_max = x_max)
+  
+  # Plotting frame.
+  df <- data_arm %>% OneSampleCICDF(tau = xaxis$tau)
+  df$arm <- factor(which_arm)
 
   # Plotting.
   prob <- NULL
@@ -568,7 +531,7 @@ PlotAUCIC <- function(
     ggplot2::geom_step(
       ggplot2::aes(x = time, y = prob), 
       color = color,
-      size = 1
+      linewidth = 1
     ) + 
     ggplot2::scale_x_continuous(
       name = x_name,
@@ -688,9 +651,9 @@ PlotNARs <- function(
   nar_trt <- NULL
   df <- data %>%
     dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+      arm = dplyr::all_of(arm_name),
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     ) %>%
     TwoSampleNARDF(x_breaks) %>%
     tidyr::pivot_longer(

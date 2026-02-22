@@ -19,7 +19,7 @@ OneSampleCICDF(
 
 \item{status_name}{Name of status column.}
 
-\item{tau}{Trunction time.}
+\item{tau}{Truncation time.}
 
 \item{time_name}{Name of time column.}
 }

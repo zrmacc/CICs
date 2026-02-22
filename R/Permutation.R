@@ -70,7 +70,7 @@ PermSim <- function(
     return(out)
   }
   
-  sim <- lapply(seq(1:reps), Loop)
+  sim <- lapply(seq_len(reps), Loop)
   sim <- data.frame(do.call(rbind, sim))
   colnames(sim) <- c(
     "perm_diff",

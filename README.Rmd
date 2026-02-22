@@ -9,11 +9,13 @@ output:
 
 # Inference for Cumulative Incidence Curves
 
+[![R-CMD-check](https://github.com/zrmacc/CICs/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/zrmacc/CICs/actions/workflows/R-CMD-check.yaml)
+
 Zachary McCaw <br>
-Updated: 20-12-24
+Updated: 2026-02-22
 
 ```{r global_options, include=FALSE}
-knitr::opts_chunk$set(cache = TRUE)
+knitr::opts_chunk$set(cache = FALSE)
 ```
 
 ### Description

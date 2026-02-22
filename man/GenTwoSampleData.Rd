@@ -36,7 +36,7 @@ GenTwoSampleData(
 \item{tau}{Optional truncation time needed if censoring rate is set to 0.}
 }
 \value{
-Data.frame with observation 'time', event 'status, and 
+Data.frame with observation 'time', event 'status', and 
   treatment 'arm'.
 }
 \description{

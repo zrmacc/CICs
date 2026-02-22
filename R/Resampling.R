@@ -1,28 +1,25 @@
+# Internal: apply fun within strata and rbind.
+.stratified_apply <- function(data, fun) {
+  strata_list <- split(data, data$strata, drop = TRUE)
+  do.call(rbind, lapply(strata_list, fun))
+}
+
 #' Generate Bootstrap Data.frame
 #'
 #' @param data Data.frame.
 #' @return Bootstrapped data.frame.
 BootData <- function(data) {
   n <- nrow(data)
-  key <- sample(x = n, size = n, replace = TRUE)
-  out <- data[key, ]
-  return(out)
+  data[sample.int(n, n, replace = TRUE), ]
 }
 
-
 #' Stratified Bootstrap
-#' 
+#'
 #' @param data Data.frame containing `strata`
 #' @return Data.frame bootstrapped within strata.
 StratBoot <- function(data) {
-  data_strata <- split(data, data$strata, drop = TRUE)
-  boot_strata <- lapply(data_strata, BootData)
-  out <- do.call(rbind, boot_strata)
-  return(out)
+  .stratified_apply(data, BootData)
 }
-
-
-# -----------------------------------------------------------------------------
 
 #' Generate Permuted Data.frame
 #'
@@ -30,18 +27,14 @@ StratBoot <- function(data) {
 #' @return Permuted data.frame.
 PermData <- function(data) {
   n <- nrow(data)
-  data$arm <- data$arm[sample(x = n, size = n, replace = TRUE)]
-  return(data)
+  data$arm <- data$arm[sample.int(n, n, replace = FALSE)]
+  data
 }
 
-
 #' Stratified Permutation
-#' 
+#'
 #' @param data Data.frame containing `strata` and `arm`.
-#' @return Data.frame bootstrapped within strata.
+#' @return Data.frame with arm permuted within strata.
 StratPerm <- function(data) {
-  data_strata <- split(data, data$strata, drop = TRUE)
-  perm_strata <- lapply(data_strata, PermData)
-  out <- do.call(rbind, perm_strata)
-  return(out)
+  .stratified_apply(data, PermData)
 }

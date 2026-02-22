@@ -1,6 +1,8 @@
 Package: CICs
 Title: Inference on Cumulative Incidence Curves
-Version: 0.2.2
+Version: 0.2.3
+Author: Zachary McCaw [aut, cre] (<https://orcid.org/0000-0002-2006-9828>)
+Maintainer: Zachary McCaw <zmccaw@alumni.harvard.edu>
 Authors@R: 
     person(given = "Zachary",
            family = "McCaw",
@@ -18,7 +20,7 @@ Imports:
   Rcpp,
   stats,
   tidyr
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
 Suggests: 
   cowplot,
   knitr,

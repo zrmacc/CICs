@@ -71,7 +71,7 @@ GenData <- function(
 #' @param death_rate1 Death rate in arm 1.
 #' @param death_rate0 Death rate in arm 0.
 #' @param tau Optional truncation time needed if censoring rate is set to 0.
-#' @return Data.frame with observation 'time', event 'status, and 
+#' @return Data.frame with observation 'time', event 'status', and 
 #'   treatment 'arm'.
 #' @export
 GenTwoSampleData <- function(
@@ -87,11 +87,11 @@ GenTwoSampleData <- function(
 ) {
   
   # Generate data for arm 1.
-  data1 <- GenData(n1, censor_rate1, event_rate1, death_rate1, tau)
+  data1 <- GenData(n1, event_rate1, death_rate1, censor_rate1, tau)
   data1$arm <- 1
   
   # Generate data for arm 0.
-  data0 <- GenData(n0, censor_rate0, event_rate0, death_rate0, tau)
+  data0 <- GenData(n0, event_rate0, death_rate0, censor_rate0, tau)
   data0$arm <- 0
   
   # Output.

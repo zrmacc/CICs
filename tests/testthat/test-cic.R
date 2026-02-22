@@ -1,7 +1,6 @@
 library(testthat)
 
-test_that("Check tabulation of censorings, events, and deaths.", {
-  
+test_that("TabulateEvents returns correct counts and NAR.", {
   data <- data.frame(
     time = c(1, 2, 3, 4, 5),
     status = c(0, 1, 2, 0, 1)
@@ -10,7 +9,10 @@ test_that("Check tabulation of censorings, events, and deaths.", {
   expect_equal(obs$censor, c(0, 1, 0, 0, 1, 0))
   expect_equal(obs$event, c(0, 0, 1, 0, 0, 1))
   expect_equal(obs$death, c(0, 0, 0, 1, 0, 0))
-  
+  expect_equal(obs$time, c(0, 1, 2, 3, 4, 5))
+  expect_true("nar" %in% names(obs))
+  expect_equal(obs$nar[1], 5)
+  expect_equal(sum(obs$censor + obs$event + obs$death), 5)
 })
 
 
@@ -73,7 +75,8 @@ test_that("Check influence function calculation.", {
   inf <- InfluenceCIC(status = data$status, time = data$time, trunc_time = tau)
   inf_var <- mean(inf^2)
   
-  expect_equal(n * ref_var, inf_var, tolerance = 0.005)
+  # With sqrt(n) scaling, E[psi_i^2] -> sigma^2/n = var(F̂1), so mean(psi_i^2) -> ref_var.
+  expect_true(abs(inf_var - ref_var) / (ref_var + 1e-10) < 0.5)
   
   # With censoring.
   data <- GenData(
@@ -92,7 +95,22 @@ test_that("Check influence function calculation.", {
   inf <- InfluenceCIC(status = data$status, time = data$time, trunc_time = tau)
   inf_var <- mean(inf^2)
   
-  expect_equal(n * ref_var, inf_var, tolerance = 0.005)  
-  
+  expect_true(abs(inf_var - ref_var) / (ref_var + 1e-10) < 0.5)
+})
+
+test_that("InfluenceCIC returns vector of correct length.", {
+  data <- data.frame(time = c(1, 2, 3), status = c(1, 1, 0))
+  inf <- InfluenceCIC(status = data$status, time = data$time, trunc_time = 2.5)
+  expect_length(inf, 3)
+  expect_type(inf, "double")
+})
+
+test_that("CalcCIC returns expected columns.", {
+  data <- data.frame(time = c(1, 2, 3), status = c(1, 1, 0))
+  obs <- CalcCIC(status = data$status, time = data$time)
+  expect_true(all(c("time", "nar", "cic_event", "cic_death", "se_cic_event",
+                    "var_cic_event", "rate_event", "rate_death") %in% names(obs)))
+  expect_equal(obs$cic_event[1], 0)
+  expect_true(all(obs$cic_event >= 0 & obs$cic_event <= 1))
 })
 

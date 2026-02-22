@@ -2,7 +2,7 @@
 % Please edit documentation in R/Class.R
 \name{print.compCICs}
 \alias{print.compCICs}
-\title{Print Method for Compre CICs Object.}
+\title{Print Method for Compare CICs Object.}
 \usage{
 \method{print}{compCICs}(x, ...)
 }

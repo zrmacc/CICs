@@ -1,6 +1,11 @@
 # Purpose: Functions to perform bootstrap inference on the difference in AUCs
 # between two cumulative incidence curves.
 
+# Internal: step function from CIC (times, probs).
+.stepfun_cic <- function(times, probs) {
+  stats::stepfun(x = times, y = c(0, probs))
+}
+
 #' Find Area Under the Cumulative Incidence Curve.
 #'
 #' @param times CIC times.
@@ -8,10 +13,7 @@
 #' @param tau Truncation time.
 #' @return Numeric.
 FindAUC <- function(times, probs, tau) {
-  g <- stats::stepfun(
-    x = times,
-    y = c(0, probs)
-  )
+  g <- .stepfun_cic(times, probs)
   area <- stats::integrate(f = g, lower = 0, upper = tau, subdivisions = 2e3)
   return(area$value)
 }
@@ -34,8 +36,7 @@ FindAOC <- function(times, probs, tau) {
 #' @param probs CIC probabilities.
 #' @param tau Event time.
 FindRate <- function(times, probs, tau) {
-  g <- stats::stepfun(x = times, y = c(0, probs))
-  return(g(tau))
+  .stepfun_cic(times, probs)(tau)
 }
 
 
@@ -45,13 +46,17 @@ FindRate <- function(times, probs, tau) {
 #' @param probs CIC probabilities.
 #' @param q Quantile.
 FindQuantile <- function(times, probs, q) {
-  if (q > max(probs)) {
+  if (q > max(probs, na.rm = TRUE)) {
     out <- NA
   } else {
     probs <- round(probs, digits = 16)
     idx1 <- (probs >= q)
     idx2 <- (probs > q)
-    out <- mean(c(min(times[idx1]), min(times[idx2])))
+    if (!any(idx1) || !any(idx2)) {
+      out <- NA
+    } else {
+      out <- mean(c(min(times[idx1], na.rm = TRUE), min(times[idx2], na.rm = TRUE)))
+    }
   }
   return(out)
 }
@@ -77,22 +82,17 @@ FindStat <- function(
   param
 ) {
   
-  # Construct cumulative incidence curve.
   tab <- CalcCIC(status = status, time = time)
   times <- tab$time
   probs <- tab$cic_event
-  
-  out <- NULL
-  if (sum_stat == 'AOC') {
-    out <- FindAOC(times = times, probs = probs, tau = param)
-  } else if (sum_stat == 'AUC') {
-    out <- FindAUC(times = times, probs = probs, tau = param)
-  } else if (sum_stat == 'Quantile') {
-    out <- FindQuantile(times = times, probs = probs, q = param)
-  } else if(sum_stat == 'Rate') {
-    out <- FindRate(times = times, probs = probs, tau = param)
-  }
-  return(out)
+  switch(
+    sum_stat,
+    AOC = FindAOC(times = times, probs = probs, tau = param),
+    AUC = FindAUC(times = times, probs = probs, tau = param),
+    Quantile = FindQuantile(times = times, probs = probs, q = param),
+    Rate = FindRate(times = times, probs = probs, tau = param),
+    NULL
+  )
 }
 
 
@@ -148,7 +148,7 @@ SumStats <- function(
     dplyr::summarise(
       "stat" = sum_stat,
       "n" = sum(n),
-      "est" = sum(weight * est[!is.na(est)]) / sum(weight[!is.na(est)]),
+      "est" = sum(weight[!is.na(est)] * est[!is.na(est)]) / sum(weight[!is.na(est)]),
       .groups = "drop"
     ) 
   
@@ -166,10 +166,7 @@ SumStats <- function(
     # Cumulative incidence curves.
     curves <- data %>%
       dplyr::group_by(strata, arm) %>%
-      dplyr::summarise(
-        CalcCIC(status = status, time = time),
-        .groups = "drop"
-      ) 
+      dplyr::reframe(CalcCIC(status = status, time = time), .groups = "drop") 
     
     # Per-stratum summary statistics.
     stat <- est0 <- est1 <- NULL

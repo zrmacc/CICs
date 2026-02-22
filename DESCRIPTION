@@ -24,6 +24,7 @@ RoxygenNote: 7.3.3
 Suggests: 
   cowplot,
   knitr,
+  markdown,
   ggsci,
   rmarkdown,
   testthat (>= 3.0.0),
